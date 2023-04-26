@@ -1,5 +1,6 @@
 <script>
-    import { getBookmarks ,toHex} from '../functions.js'
+    import { getBookmarks ,toHex, formatBookmark,
+        getEvent,getPubkeyList,getProfile} from '../functions.js'
     
     let pubkey = "";
     let author="";
@@ -10,6 +11,7 @@
     let relays=[];
     let bookmarkTags = ["test1","test2"];
     let selectedTag="";
+    let bookmark=[];
 
     async function onClickGetPubkey(){
         // @ts-ignore
@@ -30,7 +32,22 @@
         }
         const bookmarks = await getBookmarks(author,relay);
         console.log(bookmarks);
+        const bookmarkList=formatBookmark(bookmarks);//[{tag1},{tag2},...]
+        console.log(bookmarkList)
+        bookmarkTags=Object.keys(bookmarkList);
+        console.log(selectedTag);
+        // @ts-ignore
+        selectedTag=bookmarkTags[0];
+        // @ts-ignore
+        bookmark=bookmarkList[selectedTag];
+        const bookmarkListEvent = getEvent(bookmarkList);//[{key=ID,value=event],,},{}]
+        const pubkeyList=getPubkeyList(bookmarkListEvent);//pubkeyLIstつくる
+        const profiles=getProfile(pubkeyList);//key=pubkey,value=profile
+
+        console.log(bookmark);
+    
     }
+    function onChangeTag(){}
 </script>
 
 <!------------------------------------------------------>
@@ -59,17 +76,18 @@
     <div class = "getTags">
         <button on:click={onClickGetTags}>GetTags</button>
     </div>
+    <div class ="setTag">
     <div class="dropdownTags">
         tag:
-        <select bind:value={selectedTag}>
+        <select bind:value={selectedTag} on:change={onChangeTag}>
             {#each bookmarkTags as tag}
-                <option value={selectedTag}>
+                <option value={tag} selected>
                     {tag}
                 </option>
             {/each}
         </select>
     </div>
-
+    </div>
     <div class = "list">
         <div class = "note">
 

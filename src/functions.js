@@ -1,4 +1,4 @@
-import { nip19, relayInit } from 'nostr-tools'
+import { nip19, relayInit ,SimplePool} from 'nostr-tools'
 
 /**
  * @param {string} author
@@ -91,4 +91,101 @@ export function toHex(pubkey) {
         }
     }
     return author
+}
+
+/**
+ * @param {string | any[]} bookmark
+ */
+export function formatBookmark(bookmark) {
+    /*
+    * @param {string | any[]} formatBookmark
+    */
+    let formatBookmark = {};
+
+    for (let i = 0; i < bookmark.length; i++) {
+        const bookmarkObjs = bookmark[i].tags.slice(1).map((/** @type {string[]} */ tag) => tag[1]);
+        // @ts-ignore
+       // formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
+       formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
+   
+    }
+    return formatBookmark;
+}
+
+
+//イベント内容検索用リレーたち
+let RelaysforSeach = [
+    "wss://nostr.wine",
+    "wss://universe.nostrich.land",
+    "wss://relay.nostr.band",
+    "wss://relay.damus.io"
+];
+
+/**
+* @param {any} bookmarkList
+*/
+export function getEvent(bookmarkList) {
+    let bookmarkEvent={};
+
+    let filter = [{ ids: [] }];
+    //let eventIds={};
+    //eventIds[0] = bookmarkList[Object.keys(bookmarkList)[0]];
+    let idList = [];
+    
+    // @ts-ignore
+    idList=(bookmarkList[Object.keys(bookmarkList)[0]]);
+    //idList[bookmarkList[Object.keys(bookmarkList)[0]]]="";
+    if (Object.keys(bookmarkList).length > 0) {
+        for (let i = 1; i < Object.keys(bookmarkList).length; i++) {
+            // @ts-ignore
+            idList=[...idList, ...bookmarkList[Object.keys(bookmarkList)[i]]];
+      //      idList[bookmarkList[Object.keys(bookmarkList)[i]]]="";
+        //    eventIds[i] = bookmarkList[Object.keys(bookmarkList)[i]];
+
+        }
+    }
+    const eventList = idList.reduce((/** @type {{ [x: string]: string; }} */ list, /** @type {string | number} */ id) => {
+        list[id] = "";
+        return list;
+      }, {});
+
+  
+    // @ts-ignore
+    filter[0].ids = idList;
+   
+    const pool = new SimplePool();
+    let sub = pool.sub(RelaysforSeach,filter);
+    const result = new Promise((resolve) => {
+        let isSuccess = false;
+        const timeoutID = setTimeout(() => {
+            resolve(eventList);
+        }, 5000);
+        sub.on('event', event => {
+            eventList[event.id]=event;
+            // this will only be called once the first time the event is received
+            // ...
+          });
+          sub.on("eose", () => {
+            
+            sub.unsub(); //イベントの購読を停止
+            clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
+            resolve(eventList);
+            clearTimeout(timeoutID);
+        });
+
+        });
+        console.log(eventList);
+}
+
+/**
+* @param {any} eventList
+*/
+export function getPubkeyList(eventList) {
+
+}
+/**
+* @param {any} pubkeyList
+*/
+export function getProfile(pubkeyList) {
+
 }
