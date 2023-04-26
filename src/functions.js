@@ -1,4 +1,4 @@
-import { nip19, relayInit ,SimplePool} from 'nostr-tools'
+import { nip19, relayInit, SimplePool } from 'nostr-tools'
 
 /**
  * @param {string} author
@@ -105,9 +105,9 @@ export function formatBookmark(bookmark) {
     for (let i = 0; i < bookmark.length; i++) {
         const bookmarkObjs = bookmark[i].tags.slice(1).map((/** @type {string[]} */ tag) => tag[1]);
         // @ts-ignore
-       // formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
-       formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
-   
+        // formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
+        formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
+
     }
     return formatBookmark;
 }
@@ -124,57 +124,69 @@ let RelaysforSeach = [
 /**
 * @param {any} bookmarkList
 */
-export function getEvent(bookmarkList) {
-    let bookmarkEvent={};
+export async function getEvent(bookmarkList) {
+    /**
+     * @type {string[]}
+     */
+    let pubkeys = [];
 
     let filter = [{ ids: [] }];
     //let eventIds={};
     //eventIds[0] = bookmarkList[Object.keys(bookmarkList)[0]];
     let idList = [];
-    
+
     // @ts-ignore
-    idList=(bookmarkList[Object.keys(bookmarkList)[0]]);
+    idList = (bookmarkList[Object.keys(bookmarkList)[0]]);
     //idList[bookmarkList[Object.keys(bookmarkList)[0]]]="";
     if (Object.keys(bookmarkList).length > 0) {
         for (let i = 1; i < Object.keys(bookmarkList).length; i++) {
             // @ts-ignore
-            idList=[...idList, ...bookmarkList[Object.keys(bookmarkList)[i]]];
-      //      idList[bookmarkList[Object.keys(bookmarkList)[i]]]="";
-        //    eventIds[i] = bookmarkList[Object.keys(bookmarkList)[i]];
+            idList = [...idList, ...bookmarkList[Object.keys(bookmarkList)[i]]];
+            //      idList[bookmarkList[Object.keys(bookmarkList)[i]]]="";
+            //    eventIds[i] = bookmarkList[Object.keys(bookmarkList)[i]];
 
         }
     }
     const eventList = idList.reduce((/** @type {{ [x: string]: string; }} */ list, /** @type {string | number} */ id) => {
         list[id] = "";
         return list;
-      }, {});
+    }, {});
 
-  
+
     // @ts-ignore
     filter[0].ids = idList;
-   
+
     const pool = new SimplePool();
-    let sub = pool.sub(RelaysforSeach,filter);
+    let sub = pool.sub(RelaysforSeach, filter);
     const result = new Promise((resolve) => {
         let isSuccess = false;
         const timeoutID = setTimeout(() => {
-            resolve(eventList);
+            resolve([eventList, pubkeys]);
         }, 5000);
         sub.on('event', event => {
-            eventList[event.id]=event;
+            eventList[event.id] = event;
+            if (!pubkeys.includes(event.pubkey)){
+                pubkeys.push(event.pubkey);
+            }
             // this will only be called once the first time the event is received
             // ...
-          });
-          sub.on("eose", () => {
-            
+        });
+        sub.on("eose", () => {
+
             sub.unsub(); //イベントの購読を停止
             clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
-            resolve(eventList);
+            resolve([eventList, pubkeys]);
             clearTimeout(timeoutID);
         });
 
-        });
-        console.log(eventList);
+    });
+    console.log(eventList);
+
+    await result.then(eventList => {
+        console.log(eventList)
+        return eventList;
+    });//このリザルトはプロミスの結果に入る
+    return result;
 }
 
 /**

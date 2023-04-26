@@ -40,11 +40,15 @@
         selectedTag=bookmarkTags[0];
         // @ts-ignore
         bookmark=bookmarkList[selectedTag];
-        const bookmarkListEvent = getEvent(bookmarkList);//[{key=ID,value=event],,},{}]
-        const pubkeyList=getPubkeyList(bookmarkListEvent);//pubkeyLIstつくる
+        const bookmarkListEvent = await getEvent(bookmarkList);//[{key=ID,value=event],,},{}]
+        // @ts-ignore
+        const eventList=bookmarkListEvent[0];
+        // @ts-ignore
+        const pubkeyList=bookmarkListEvent[1];//pubkeyLIstつくる
         const profiles=getProfile(pubkeyList);//key=pubkey,value=profile
 
-        console.log(bookmark);
+        console.log(eventList);
+        console.log(pubkeyList);
     
     }
     function onChangeTag(){}
