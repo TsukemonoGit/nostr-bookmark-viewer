@@ -12,11 +12,15 @@
     let pubkey = "";
     let author = "";
     let relay = "";
+    let message="";
     /**
      * @type {string | any[]}
      */
     let relays = [];
-    let bookmarkTags = ["test1", "test2"];
+    /**
+     * @type {string | any[]}
+     */
+    let bookmarkTags = [];
     let selectedTag = "";
     /**
      * @type {string[]}
@@ -52,6 +56,8 @@
     }
 
     async function onClickGetTags() {
+        viewbm=[];
+        message="通信中";
         try {
             author = toHex(pubkey);
             console.log(author);
@@ -62,6 +68,10 @@
         console.log(bookmarks);
         // @ts-ignore
         bookmarkList = formatBookmark(bookmarks); //[{tag1},{tag2},...]
+        if(bookmarkTags.length===0){
+            message="このリレーのkind30001にはなんもないかも";
+            return;
+        }
         console.log(bookmarkList);
         bookmarkTags = Object.keys(bookmarkList);
         console.log(selectedTag);
@@ -90,6 +100,7 @@
             }
         }
         viewbm = viewbms[bookmarkTags.indexOf(selectedTag)];
+        message="";
     }
 
     function onChangeTag() {
@@ -146,30 +157,38 @@
     <div class="getTags">
         <button on:click={onClickGetTags}>GetTags</button>
     </div>
-    <div class="setTag">
-        <div class="dropdownTags">
-            tag:
-            <select bind:value={selectedTag} on:change={onChangeTag}>
-                {#each bookmarkTags as tag}
-                    <option value={tag} selected>
-                        {tag}
-                    </option>
-                {/each}
-            </select>
-        </div>
-    </div>
-    <div class="list">
-        {#each viewbm as book, index}
-            <div class="note">
-                <img class="icon" src={book.icon} alt="icon" />
-                <div class="contentArea">
-                    <div class="display_name"><strong>{book.display_name}</strong> &nbsp; <small> @{book.name}</small></div>
 
-                    <div class="content">{book.content}</div>
-                </div>
+    {#if viewbm.length === 0}
+    <div>{message}</div>
+    {:else}
+        <div class="setTag">
+            <div class="dropdownTags">
+                tag:
+                <select bind:value={selectedTag} on:change={onChangeTag}>
+                    {#each bookmarkTags as tag}
+                        <option value={tag} selected>
+                            {tag}
+                        </option>
+                    {/each}
+                </select>
             </div>
-        {/each}
-    </div>
+        </div>
+        <div class="list">
+            {#each viewbm as book, index}
+                <div class="note">
+                    <img class="icon" src={book.icon} alt="icon" />
+                    <div class="contentArea">
+                        <div class="display_name">
+                            <strong>{book.display_name}</strong> &nbsp;
+                            <small> @{book.name}</small>
+                        </div>
+
+                        <div class="content">{book.content}</div>
+                    </div>
+                </div>
+            {/each}
+        </div>
+    {/if}
 </main>
 
 <!------------------------------------------------------>
@@ -184,11 +203,9 @@
 
     .contentArea {
         margin-left: 10px;
-
     }
 
     .icon {
-       
         width: 50px;
         height: 50px;
         border-radius: 50%;
@@ -197,15 +214,12 @@
 
     .display_name {
         font-weight: bold;
-      
- 
     }
-
 
     .content {
         margin-top: 5px;
         margin-left: 10px;
-        white-space: pre-wrap
+        white-space: pre-wrap;
     }
     /* 
 .note {
