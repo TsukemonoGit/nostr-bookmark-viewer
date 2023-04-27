@@ -1,6 +1,6 @@
 <script>
     import { getBookmarks ,toHex, formatBookmark,
-        getEvent,getPubkeyList,getProfile} from '../functions.js'
+        getEvent,getProfile} from '../functions.js'
     
     let pubkey = "";
     let author="";
@@ -45,10 +45,11 @@
         const eventList=bookmarkListEvent[0];
         // @ts-ignore
         const pubkeyList=bookmarkListEvent[1];//pubkeyLIstつくる
-        const profiles=getProfile(pubkeyList);//key=pubkey,value=profile
+        const profiles=await getProfile(pubkeyList);//key=pubkey,value=profile
 
         console.log(eventList);
         console.log(pubkeyList);
+        console.log(profiles);
     
     }
     function onChangeTag(){}

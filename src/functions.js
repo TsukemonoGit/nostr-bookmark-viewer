@@ -115,9 +115,9 @@ export function formatBookmark(bookmark) {
 
 //イベント内容検索用リレーたち
 let RelaysforSeach = [
+    "wss://relay.nostr.band",
     "wss://nostr.wine",
     "wss://universe.nostrich.land",
-    "wss://relay.nostr.band",
     "wss://relay.damus.io"
 ];
 
@@ -147,7 +147,7 @@ export async function getEvent(bookmarkList) {
 
         }
     }
-    const eventList = idList.reduce((/** @type {{ [x: string]: string; }} */ list, /** @type {string | number} */ id) => {
+    let eventList = idList.reduce((/** @type {{ [x: string]: string; }} */ list, /** @type {string | number} */ id) => {
         list[id] = "";
         return list;
     }, {});
@@ -159,20 +159,20 @@ export async function getEvent(bookmarkList) {
     const pool = new SimplePool();
     let sub = pool.sub(RelaysforSeach, filter);
     const result = new Promise((resolve) => {
-        let isSuccess = false;
+
         const timeoutID = setTimeout(() => {
             resolve([eventList, pubkeys]);
         }, 5000);
+
         sub.on('event', event => {
             eventList[event.id] = event;
-            if (!pubkeys.includes(event.pubkey)){
+            if (!pubkeys.includes(event.pubkey)) {
                 pubkeys.push(event.pubkey);
             }
             // this will only be called once the first time the event is received
             // ...
         });
         sub.on("eose", () => {
-
             sub.unsub(); //イベントの購読を停止
             clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
             resolve([eventList, pubkeys]);
@@ -182,22 +182,50 @@ export async function getEvent(bookmarkList) {
     });
     console.log(eventList);
 
-    await result.then(eventList => {
-        console.log(eventList)
-        return eventList;
-    });//このリザルトはプロミスの結果に入る
+    await result;// result プロミスの解決を待つ
     return result;
 }
 
-/**
-* @param {any} eventList
-*/
-export function getPubkeyList(eventList) {
 
-}
 /**
-* @param {any} pubkeyList
+* @param {string[]} pubkeyList
 */
-export function getProfile(pubkeyList) {
+export async function getProfile(pubkeyList) {
+    let profiles = pubkeyList.reduce((list, id) => {
+        // @ts-ignore
+        list[id] = "";
+        return list;
+    }, {});
 
+    let filter = [
+        {
+            authors: pubkeyList,
+            kinds: [0]
+        }];
+    const pool = new SimplePool();
+    let sub = pool.sub(RelaysforSeach, filter);
+    const result = new Promise((resolve) => {
+
+        const timeoutID = setTimeout(() => {
+            resolve(profiles);
+        }, 5000);
+
+        sub.on('event', event => {
+            // @ts-ignore
+            profiles[event.pubkey] = event;
+        });
+
+        sub.on("eose", () => {
+            sub.unsub(); //イベントの購読を停止
+            clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
+            resolve(profiles);
+            clearTimeout(timeoutID);
+        });
+
+    });
+    //    console.log(eventList);
+
+    await result;// result プロミスの解決を待つ
+    return result;
 }
+
