@@ -1,4 +1,6 @@
 <script>
+    import { getContext, identity } from 'svelte/internal';
+    import { nip19} from 'nostr-tools'
     import { getBookmarks ,toHex, formatBookmark,
         getEvent,getProfile} from '../functions.js'
     
@@ -11,8 +13,20 @@
     let relays=[];
     let bookmarkTags = ["test1","test2"];
     let selectedTag="";
+    /**
+     * @type {string[]}
+     */
     let bookmark=[];
-
+    /**
+     * @type {import("nostr-tools").Event[]}
+     */
+    let eventList;
+    let profiles={};
+   
+    /**
+     * @type {{ [x: string]: string[]}}
+     */
+    let bookmarkList;
     async function onClickGetPubkey(){
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
@@ -32,7 +46,8 @@
         }
         const bookmarks = await getBookmarks(author,relay);
         console.log(bookmarks);
-        const bookmarkList=formatBookmark(bookmarks);//[{tag1},{tag2},...]
+        // @ts-ignore
+        bookmarkList=formatBookmark(bookmarks);//[{tag1},{tag2},...]
         console.log(bookmarkList)
         bookmarkTags=Object.keys(bookmarkList);
         console.log(selectedTag);
@@ -42,17 +57,54 @@
         bookmark=bookmarkList[selectedTag];
         const bookmarkListEvent = await getEvent(bookmarkList);//[{key=ID,value=event],,},{}]
         // @ts-ignore
-        const eventList=bookmarkListEvent[0];
+        eventList=bookmarkListEvent[0];
         // @ts-ignore
         const pubkeyList=bookmarkListEvent[1];//pubkeyLIstつくる
-        const profiles=await getProfile(pubkeyList);//key=pubkey,value=profile
+        profiles=await getProfile(pubkeyList);//key=pubkey,value=profile
 
         console.log(eventList);
-        console.log(pubkeyList);
+        //console.log(pubkeyList);
         console.log(profiles);
+        
+        for (let i = 0;i<bookmark.length;i++){
+            viewbm[i]=getNote(bookmark[i]);
+        }
+    }
+    /**
+     * @type {any[]}
+     */
+    let viewbm=[];
+    function onChangeTag(){
+        bookmark=bookmarkList[selectedTag];
+        for (let i = 0;i<bookmark.length;i++){
+            viewbm[i]=getNote(bookmark[i]);
+        }
+        console.log(typeof bookmark);
+        //console.log( eventList[bookmark[0]].content);
+        console.log( getNote(bookmark[0]));
     
     }
-    function onChangeTag(){}
+    
+    /**
+     * @param {string} noteID
+     */
+    function getNote(noteID){
+        let note={};
+        note.noteid=nip19.noteEncode(noteID);
+        try{
+        // @ts-ignore
+        const thisEvent=eventList[noteID];
+        note.content=thisEvent.content;
+        note.date=new Date(thisEvent.created_at * 1000 ) .toLocaleString();
+        // @ts-ignore
+        const thisProfile =profiles[thisEvent.pubkey];
+        note.pubkey=nip19.npubEncode(thisProfile.pubkey);
+        note.name=JSON.parse(thisProfile.content).name;
+        note.display_name=JSON.parse(thisProfile.content).display_name;
+        note.icon=JSON.parse(thisProfile.content).picture;
+        }catch{}
+        return note
+    }
 </script>
 
 <!------------------------------------------------------>
@@ -94,9 +146,12 @@
     </div>
     </div>
     <div class = "list">
-        <div class = "note">
+        {#each viewbm as book ,index}
+        {book.content}
+      <div class="note"></div>
+   
 
-        </div>
+        {/each}
     </div>
     
 </main>
