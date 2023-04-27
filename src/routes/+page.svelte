@@ -68,7 +68,8 @@
         console.log(bookmarks);
         // @ts-ignore
         bookmarkList = formatBookmark(bookmarks); //[{tag1},{tag2},...]
-        if(bookmarkTags.length===0){
+        // @ts-ignore
+        if(Object.keys(bookmarkList).length===0){
             message="このリレーのkind30001にはなんもないかも";
             return;
         }
