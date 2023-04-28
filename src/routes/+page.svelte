@@ -19,6 +19,7 @@
     let author = "";
     let relay = "";
     let message = "";
+    let message2="";
     /**
      * @type {string | any[]}
      */
@@ -78,6 +79,7 @@
     }
 
     async function onClickGetTags() {
+        message2="";
         viewbm = [];
         message = "通信中";
         try {
@@ -156,15 +158,22 @@
     }
 
     async function clickAddBookmark() {
+        message2="";
         if (noteID.length < 10) {
-            message = "noteIDを確認してください";
+            message2 = "noteIDを確認してください";
             return;
         }
         console.log(show);
         
-        show.set(true);
+       
         //noteIDをHexにしてイベントを取得
         noteHex = noteToHex(noteID);
+        if( bookmarkList[selectedTag].includes(noteHex)){
+            message2="そのIDはすでにリストの中にあるよ";
+            console.log(message2);
+            return;
+        }
+        show.set(true);
         const thisEvent = await getSingleEvent(noteHex);
         console.log(thisEvent);
         showModalData=thisEvent.content;
@@ -183,8 +192,8 @@ async function WriteEvent(){
      //イエスで追加させる
      const pushEvent=bookmarks[bookmarkTags.indexOf(selectedTag)];
    
-     postEvent(noteHex, pushEvent,[relay]);
-    //onClickGetTags();
+     await postEvent(noteHex, pushEvent,[relay]);
+    onClickGetTags();
 }
 </script>
 
@@ -231,6 +240,7 @@ async function WriteEvent(){
         <button on:click={closeModal}>Cancel </button>
         </div>
     </Modal>
+    <div>{message2}</div>
     <!---------------------------------------------------------------------------->
     <hr />
         <div class="setTag">

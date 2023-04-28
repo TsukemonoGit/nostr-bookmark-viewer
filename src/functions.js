@@ -1,4 +1,4 @@
-import { nip19, relayInit, SimplePool } from 'nostr-tools'
+import { nip19, relayInit, SimplePool ,getEventHash} from 'nostr-tools'
 
 /**
  * @param {string} author
@@ -252,9 +252,36 @@ export async function getProfile(pubkeyList) {
  * @param {any} relays
  */
 export async function postEvent(noteID, _event, relays) {
+    console.log(_event);
+    console.log(noteID);
+    console.log(relays);
+    
     const pushNote = ['e', noteID];
     _event.tags.push(pushNote);
-    console.log(_event);
+   
+    // @ts-ignore
+    const event = await window.nostr.signEvent({
+        content: _event.content,
+        kind: _event.kind,
+        pubkey: _event.pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: _event.tags,
+    });
+    event.id = getEventHash(event);
+    const pool = new SimplePool();
+    let pub = pool.publish(relays,event);
+    pub.on("ok", () => {
+        console.log(`${relays.url} has accepted our event`);
+     });
+    // @ts-ignore
+    pub.on("failed", (reason) => {
+        console.log(
+            `failed to publish to: ${reason}`
+        );
+      
+    });
+
+   
     return;
 }
 
