@@ -12,7 +12,7 @@
     let pubkey = "";
     let author = "";
     let relay = "";
-    let message="";
+    let message = "";
     /**
      * @type {string | any[]}
      */
@@ -56,8 +56,8 @@
     }
 
     async function onClickGetTags() {
-        viewbm=[];
-        message="通信中";
+        viewbm = [];
+        message = "通信中";
         try {
             author = toHex(pubkey);
             console.log(author);
@@ -69,8 +69,8 @@
         // @ts-ignore
         bookmarkList = formatBookmark(bookmarks); //[{tag1},{tag2},...]
         // @ts-ignore
-        if(Object.keys(bookmarkList).length===0){
-            message="このリレーのkind30001にはなんもないかも";
+        if (Object.keys(bookmarkList).length === 0) {
+            message = "このリレーのkind30001にはなんもないかも";
             return;
         }
         console.log(bookmarkList);
@@ -101,7 +101,7 @@
             }
         }
         viewbm = viewbms[bookmarkTags.indexOf(selectedTag)];
-        message="";
+        message = "";
     }
 
     function onChangeTag() {
@@ -160,7 +160,7 @@
     </div>
 
     {#if viewbm.length === 0}
-    <div>{message}</div>
+        <div>{message}</div>
     {:else}
         <div class="setTag">
             <div class="dropdownTags">
@@ -177,13 +177,22 @@
         <div class="list">
             {#each viewbm as book, index}
                 <div class="note">
+                    <div class ="icon-area">
                     <img class="icon" src={book.icon} alt="icon" />
-                    <div class="contentArea">
-                        <div class="display_name">
-                            <strong>{book.display_name}</strong> &nbsp;
-                            <small> @{book.name}</small>
+                </div>
+                    <div class="note-area">
+                        <div class="note-top-area">
+                            <div class="note-top">
+                                <div class="display_name">
+                                    {book.display_name}
+                                </div>
+                                <div class="name">@{book.name}</div>
+                            </div>
+                            <div class="note-date">
+                                <a href='https://nostx.shino3.net/{book.noteid}' target="_blank"
+                                rel="noopener noreferrer" class="date">{book.date}</a>
+                            </div>
                         </div>
-
                         <div class="content">{book.content}</div>
                     </div>
                 </div>
@@ -197,24 +206,38 @@
     .note {
         display: flex;
         align-items: center;
-        padding: 10px;
+        padding: 15px;
         margin: 5px;
         border: solid 1px lightgray;
+        word-break: break-all;
+        border-radius: 10px;
     }
-
-    .contentArea {
+.note-area{
+    
+        width: 100%;
         margin-left: 10px;
+        margin-right: 5px;
+}
+    .note-top-area {
+        display: flex;
     }
-
+.icon-area{
+    margin:5px 5px  auto 5px;
+    
+}
     .icon {
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        margin-bottom: auto;
-    }
+         }
 
-    .display_name {
+    .note-top {
+        width: 70%;
         font-weight: bold;
+    }
+    .note-date {
+        width: 30%;
+        text-align: end;
     }
 
     .content {
@@ -222,6 +245,28 @@
         margin-left: 10px;
         white-space: pre-wrap;
     }
+    .date {
+        display: inline;
+        text-align: right;
+        font-weight: bold;
+        font-size:smaller;
+    }
+    .display_name {
+        display: inline;
+        font-weight: bold;
+    }
+    .name {
+        display: inline;
+        margin-left: 5px;
+        color: gray;
+        font-weight: normal;
+        font-size: smaller;
+    }
+    a{
+        color:rgb(74, 115, 168) ;
+        text-decoration: none;
+    }
+ 
     /* 
 .note {
   display: flex;
