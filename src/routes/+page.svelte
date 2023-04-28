@@ -199,6 +199,7 @@ async function WriteEvent(){
 
 <!------------------------------------------------------>
 <main>
+    <div class="top" style="color:red">消えるかも注意</div>
     <div class="input">
         pubkey:
         <input type="text" bind:value={pubkey} placeholder="npub or hex" />
