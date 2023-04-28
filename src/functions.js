@@ -79,7 +79,7 @@ export async function getBookmarks(author, relay) {
 /**
  * @param {string} pubkey
  */
-export function toHex(pubkey) {
+export function pubToHex(pubkey) {
     let author = pubkey;
     console.log(pubkey.slice(0, 4))
     if (pubkey.slice(0, 4) == "npub") {
@@ -92,7 +92,22 @@ export function toHex(pubkey) {
     }
     return author
 }
-
+/**
+ * @param {string} noteId
+ */
+export function noteToHex(noteId) {
+    let noteHex = noteId;
+    console.log(noteId.slice(0, 4))
+    if (noteId.slice(0, 4) == "note") {
+        console.log(noteId.slice(0, 4))
+        try {
+            noteHex = nip19.decode(noteId).data.toString();
+        } catch (error) {
+            throw new Error("error");
+        }
+    }
+    return noteHex;
+}
 /**
  * @param {string | any[]} bookmark
  */
@@ -151,7 +166,7 @@ export async function getEvent(bookmarkList) {
         list[id] = "";
         return list;
     }, {});
-
+    
 
     // @ts-ignore
     filter[0].ids = idList;
@@ -229,3 +244,54 @@ export async function getProfile(pubkeyList) {
     return result;
 }
 
+
+//ブクマに追加
+/**
+ * @param {any} noteID
+ * @param {import("nostr-tools").Event} _event
+ * @param {any} relays
+ */
+export async function postEvent(noteID, _event, relays) {
+    const pushNote = ['e', noteID];
+    _event.tags.push(pushNote);
+    console.log(_event);
+    return;
+}
+
+/**
+ * @param {any} noteHexId
+ */
+export async function getSingleEvent(noteHexId){
+   /**
+   * @type {import("nostr-tools").Event}
+   */
+    // @ts-ignore
+    let _event={};
+    let filter = [{ ids: [noteHexId] }];
+    const pool = new SimplePool();
+    let sub = pool.sub(RelaysforSeach, filter);
+    const result = new Promise((resolve) => {
+
+        const timeoutID = setTimeout(() => {
+            sub.unsub();
+            resolve(_event);
+        }, 5000);
+
+        sub.on('event', event => {
+            console.log(event);
+            _event=event;
+            resolve(event);
+            
+        });
+        sub.on("eose", () => {
+            console.log("eose");
+            sub.unsub(); //イベントの購読を停止
+            clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
+        });
+
+    });
+    console.log(_event);
+
+    await result;// result プロミスの解決を待つ
+    return result;
+}

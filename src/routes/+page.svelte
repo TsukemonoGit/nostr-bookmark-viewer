@@ -1,14 +1,20 @@
 <script>
-    import { getContext, identity } from "svelte/internal";
+    import Modal from './Modal.svelte';
+    import {show } from './stores.js';
     import { nip19 } from "nostr-tools";
     import {
         getBookmarks,
-        toHex,
+        pubToHex,
         formatBookmark,
         getEvent,
         getProfile,
+        postEvent,
+        noteToHex,
+        getSingleEvent,
     } from "../functions.js";
 
+    let showModal = false;
+    
     let pubkey = "";
     let author = "";
     let relay = "";
@@ -45,6 +51,22 @@
      * @type {{ [x: string]: string[]}}
      */
     let bookmarkList;
+    /**
+     * @type {string}
+     */
+    let noteID = "";
+    /**
+     * @type {string}
+     */
+    let noteHex="";
+    /**
+     * @type {string | any[]}
+     */
+    let bookmarks;
+   /**
+    * @type {string}
+    */
+    let showModalData="";
     async function onClickGetPubkey() {
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
@@ -59,12 +81,12 @@
         viewbm = [];
         message = "通信中";
         try {
-            author = toHex(pubkey);
+            author = pubToHex(pubkey);
             console.log(author);
         } catch (error) {
             console.log("pubkeyを確認してください");
         }
-        const bookmarks = await getBookmarks(author, relay);
+        bookmarks = await getBookmarks(author, relay);
         console.log(bookmarks);
         // @ts-ignore
         bookmarkList = formatBookmark(bookmarks); //[{tag1},{tag2},...]
@@ -132,6 +154,38 @@
         } catch {}
         return note;
     }
+
+    async function clickAddBookmark() {
+        if (noteID.length < 10) {
+            message = "noteIDを確認してください";
+            return;
+        }
+        console.log(show);
+        
+        show.set(true);
+        //noteIDをHexにしてイベントを取得
+        noteHex = noteToHex(noteID);
+        const thisEvent = await getSingleEvent(noteHex);
+        console.log(thisEvent);
+        showModalData=thisEvent.content;
+        
+        //イベントプレビューを表示して
+        //このリレーのこのタグに追加しますかYesOrNo表示
+        //イエスで追加させる
+    }
+    function closeModal(){
+   
+    show.set(false);
+    console.log($show);
+}
+async function WriteEvent(){
+    show.set(false);
+     //イエスで追加させる
+     const pushEvent=bookmarks[bookmarkTags.indexOf(selectedTag)];
+   
+     postEvent(noteHex, pushEvent,[relay]);
+    //onClickGetTags();
+}
 </script>
 
 <!------------------------------------------------------>
@@ -162,6 +216,23 @@
     {#if viewbm.length === 0}
         <div>{message}</div>
     {:else}
+    <hr />
+
+    <div class="input">
+        noteID:
+        <input type="text" bind:value={noteID} placeholder="note1..." />
+
+        <button on:click={clickAddBookmark}>AddBookmark</button>
+    </div>
+    <Modal data={showModalData}>
+        <div class="modal-footer"> 
+            relay [{relay}] の bookmarkTag [{selectedTag}] に追加
+        <button on:click={WriteEvent}>OK </button>
+        <button on:click={closeModal}>Cancel </button>
+        </div>
+    </Modal>
+    <!---------------------------------------------------------------------------->
+    <hr />
         <div class="setTag">
             <div class="dropdownTags">
                 tag:
@@ -177,9 +248,9 @@
         <div class="list">
             {#each viewbm as book, index}
                 <div class="note">
-                    <div class ="icon-area">
-                    <img class="icon" src={book.icon} alt="icon" />
-                </div>
+                    <div class="icon-area">
+                        <img class="icon" src={book.icon} alt="icon" />
+                    </div>
                     <div class="note-area">
                         <div class="note-top-area">
                             <div class="note-top">
@@ -189,8 +260,12 @@
                                 <div class="name">@{book.name}</div>
                             </div>
                             <div class="note-date">
-                                <a href='https://nostx.shino3.net/{book.noteid}' target="_blank"
-                                rel="noopener noreferrer" class="date">{book.date}</a>
+                                <a
+                                    href="https://nostx.shino3.net/{book.noteid}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="date">{book.date}</a
+                                >
                             </div>
                         </div>
                         <div class="content">{book.content}</div>
@@ -198,11 +273,15 @@
                 </div>
             {/each}
         </div>
+ 
     {/if}
 </main>
 
 <!------------------------------------------------------>
 <style>
+     hr {
+        margin: 20px 0;
+    }
     .note {
         display: flex;
         align-items: center;
@@ -212,24 +291,22 @@
         word-break: break-all;
         border-radius: 10px;
     }
-.note-area{
-    
+    .note-area {
         width: 100%;
         margin-left: 10px;
         margin-right: 5px;
-}
+    }
     .note-top-area {
         display: flex;
     }
-.icon-area{
-    margin:5px 5px  auto 5px;
-    
-}
+    .icon-area {
+        margin: 5px 5px auto 5px;
+    }
     .icon {
         width: 50px;
         height: 50px;
         border-radius: 50%;
-         }
+    }
 
     .note-top {
         width: 70%;
@@ -241,15 +318,15 @@
     }
 
     .content {
-        margin-top: 5px;
-        margin-left: 10px;
+        margin-top: 10px;
+
         white-space: pre-wrap;
     }
     .date {
         display: inline;
         text-align: right;
         font-weight: bold;
-        font-size:smaller;
+        font-size: smaller;
     }
     .display_name {
         display: inline;
@@ -262,11 +339,11 @@
         font-weight: normal;
         font-size: smaller;
     }
-    a{
-        color:rgb(74, 115, 168) ;
+    a {
+        color: rgb(74, 115, 168);
         text-decoration: none;
     }
- 
+
     /* 
 .note {
   display: flex;
