@@ -1,38 +1,15 @@
-# create-svelte
+# nostr-bookmark-viewer
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+nostrのkind30001に保存されている諸々を取得、修正したい
 
-## Creating a project
+### 主な機能
 
-If you're seeing this, you've probably already done this step. Congrats!
+- [x]特定のリレーからtagごとのnoteリストを取得表示
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- [x]noteIDから表示中のtagにnoteを追加
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+- [ ]特定のnoteを表示中のtagから削除
 
-## Developing
+- [ ]新規tagを追加
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- [ ]任意のtagを削除

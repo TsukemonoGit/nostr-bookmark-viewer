@@ -133,7 +133,7 @@
 
             
             for (let i = 0; i < pubkeyList.length; i++) {
-                console.log(pubkeyList[i]);
+            
                 if ( pubkeyList[i] in localProfiles  && localProfiles[i]!=="") {
                 }else{
                     getPubkeyList.push(pubkeyList[i]);
@@ -141,8 +141,7 @@
             }
         }else{getPubkeyList=pubkeyList;}
         console.log(getPubkeyList.length);
-        console.log(getPubkeyList);
-        console.log(localProfiles);
+  
         if(getPubkeyList.length>0){
         profiles = await getProfile(getPubkeyList); //key=pubkey,value=profile
         }
