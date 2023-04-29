@@ -72,7 +72,7 @@ export async function getBookmarks(author, relay) {
     });
 
     await result2.then(result => {
-        console.log(result)
+      //  console.log(result)
         return result;
     });//このリザルトはプロミスの結果に入る
     return result2;

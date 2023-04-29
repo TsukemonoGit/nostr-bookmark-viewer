@@ -119,26 +119,35 @@
 
         //string[] pubkeyList
         const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
-
+        console.log(pubkeyList);
+        console.log(pubkeyList.length);
+           
         //localstrageから読む
-        const localProfilesString = localStorage.getItem("profile");
+        const localProfilesString = await localStorage.getItem("profile");
         let localProfiles;
         if (localProfilesString !== null) {
-            console.log(pubkeyList.length);
-            localProfiles = JSON.parse(localProfilesString);
-            for (let i = 0; i < pubkeyList.length; i++) {
-                if (pubkeyList[i] in localProfiles) {
+            localProfiles = await JSON.parse(localProfilesString);
+            console.log(localProfiles);
+            console.log(localProfiles.length);
+            const pubLen = pubkeyList.length;
+            let index=0;
+            for (let i = 0; i < pubLen; i++) {
+                console.log(pubkeyList[i]);
+                if ( pubkeyList[i] in localProfiles  && localProfiles[i]!=="") {
                     pubkeyList.splice(i, 1);
-                }
+            
+                }else{index++;}
             }
         }
         console.log(pubkeyList.length);
+        console.log(pubkeyList);
         console.log(localProfiles);
         if(pubkeyList.length>0){
         profiles = await getProfile(pubkeyList); //key=pubkey,value=profile
         }
         if (localProfilesString !== null) {
-            profiles = { ...localProfiles, ...profiles };
+           // profiles = { ...localProfiles, ...profiles };
+           profiles = Object.assign({},localProfiles, profiles );
         }
         //localstorageに保存
         localStorage.setItem("profile", JSON.stringify(profiles));
