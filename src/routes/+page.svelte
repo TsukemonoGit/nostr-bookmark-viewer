@@ -119,7 +119,29 @@
 
         //string[] pubkeyList
         const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
+
+        //localstrageから読む
+        const localProfilesString = localStorage.getItem("profile");
+        let localProfiles;
+        if (localProfilesString !== null) {
+            console.log(pubkeyList.length);
+            localProfiles = JSON.parse(localProfilesString);
+            for (let i = 0; i < pubkeyList.length; i++) {
+                if (pubkeyList[i] in localProfiles) {
+                    pubkeyList.splice(i, 1);
+                }
+            }
+        }
+        console.log(pubkeyList.length);
+        console.log(localProfiles);
+        if(pubkeyList.length>0){
         profiles = await getProfile(pubkeyList); //key=pubkey,value=profile
+        }
+        if (localProfilesString !== null) {
+            profiles = { ...localProfiles, ...profiles };
+        }
+        //localstorageに保存
+        localStorage.setItem("profile", JSON.stringify(profiles));
 
         console.log(eventList);
         //console.log(pubkeyList);
@@ -135,7 +157,6 @@
             bookmark = bookmarkList[bookmarkTags[j]];
             viewbms[j] = [];
             for (let i = 0; i < bookmark.length; i++) {
-
                 viewbms[j][i] = getNote(bookmark[i]);
             }
         }
@@ -147,7 +168,7 @@
         bookmark = bookmarkList[selectedTag];
         viewbm = viewbms[bookmarkTags.indexOf(selectedTag)];
         console.log(typeof bookmark);
- 
+
         console.log(getNote(bookmark[0]));
     }
 
@@ -158,17 +179,18 @@
         let note = {};
         note.noteid = nip19.noteEncode(noteID);
         try {
-         
             const thisEvent = eventList[noteID];
             note.content = thisEvent.content;
             note.date = new Date(thisEvent.created_at * 1000).toLocaleString();
-       
+
             const thisProfile = profiles[thisEvent.pubkey];
             note.pubkey = nip19.npubEncode(thisProfile.pubkey);
             note.name = JSON.parse(thisProfile.content).name;
             note.display_name = JSON.parse(thisProfile.content).display_name;
             note.icon = JSON.parse(thisProfile.content).picture;
-        } catch {}
+        } catch {
+            console.log("getnoteでエラー出てる");
+        }
         return note;
     }
 
@@ -367,5 +389,4 @@
         color: rgb(74, 115, 168);
         text-decoration: none;
     }
-
 </style>
