@@ -13,3 +13,9 @@ nostrのkind30001に保存されている諸々を取得、更新したい
 - [ ] 新規tagを追加
 
 - [ ] 任意のtagを削除
+
+## 関連NIP
+- [NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md "nip-51")
+Lists
+- [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md "nip-09")
+Event Deletion
