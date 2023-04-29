@@ -1,6 +1,6 @@
 <script>
-    import Modal from './Modal.svelte';
-    import {show } from './stores.js';
+    import Modal from "./Modal.svelte";
+    import { show } from "./stores.js";
     import { nip19 } from "nostr-tools";
     import {
         getBookmarks,
@@ -14,12 +14,12 @@
     } from "../functions.js";
 
     let showModal = false;
-    
+
     let pubkey = "";
     let author = "";
     let relay = "";
     let message = "";
-    let message2="";
+    let message2 = "";
     /**
      * @type {string | any[]}
      */
@@ -30,13 +30,16 @@
     let bookmarkTags = [];
     let selectedTag = "";
     /**
-     * @type {string[]}
+     * @type {string[]} eventIDリスト
      */
     let bookmark = [];
     /**
-     * @type {import("nostr-tools").Event[]}
+     * @type {{ [key:string] : import("nostr-tools").Event }}
      */
     let eventList;
+    /**
+     * @type {{ [key:string] : import("nostr-tools").Event }}
+     */
     let profiles = {};
 
     /**
@@ -49,7 +52,7 @@
     let viewbm = [];
 
     /**
-     * @type {{ [x: string]: string[]}}
+     * @type {{ [x: string]: string[]}}　タグごとのイベントIDリスト
      */
     let bookmarkList;
     /**
@@ -59,15 +62,15 @@
     /**
      * @type {string}
      */
-    let noteHex="";
+    let noteHex = "";
     /**
-     * @type {string | any[]}
+     * @type {import("nostr-tools").Event[]}
      */
     let bookmarks;
-   /**
-    * @type {string}
-    */
-    let showModalData="";
+    /**
+     * @type {string}
+     */
+    let showModalData = "";
     async function onClickGetPubkey() {
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
@@ -79,48 +82,60 @@
     }
 
     async function onClickGetTags() {
-        message2="";
+        //初期化
+        message2 = "";
         viewbm = [];
         message = "通信中";
+
+        //npubチェック
         try {
             author = pubToHex(pubkey);
             console.log(author);
         } catch (error) {
             console.log("pubkeyを確認してください");
         }
+
+        //kind30001にイベントリクエストした結果eventリスト
         bookmarks = await getBookmarks(author, relay);
         console.log(bookmarks);
-        // @ts-ignore
-        bookmarkList = formatBookmark(bookmarks); //[{tag1},{tag2},...]
-        // @ts-ignore
-        if (Object.keys(bookmarkList).length === 0) {
+
+        if (Object.keys(bookmarks).length === 0) {
             message = "このリレーのkind30001にはなんもないかも";
             return;
         }
+
+        //eventIDからnoteを検索するために、タグごとのeventIDをまとめる
+        bookmarkList = formatBookmark(bookmarks);
         console.log(bookmarkList);
+
+        //tagによらず全部のnoteを取ってくる
+        const bookmarkListEvent = await getEvent(bookmarkList); //[{key=ID,value=event],,},{}]
+
         bookmarkTags = Object.keys(bookmarkList);
         console.log(selectedTag);
-        // @ts-ignore
-        selectedTag = bookmarkTags[0];
-        // @ts-ignore
-        bookmark = bookmarkList[selectedTag];
-        const bookmarkListEvent = await getEvent(bookmarkList); //[{key=ID,value=event],,},{}]
-        // @ts-ignore
+
+        //{eventid:event}
         eventList = bookmarkListEvent[0];
-        // @ts-ignore
-        const pubkeyList = bookmarkListEvent[1]; //pubkeyLIstつくる
+
+        //string[] pubkeyList
+        const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
         profiles = await getProfile(pubkeyList); //key=pubkey,value=profile
 
         console.log(eventList);
         //console.log(pubkeyList);
         console.log(profiles);
 
+        //（セレクトタグの初期値）とりあえずゼロ個目をセレクトタグにしておく
+        selectedTag = bookmarkTags[0];
+        //bookmark = bookmarkList[selectedTag];
+
+        //{#for each~~}につかうためのArray型に表示させるアレコレを入れる
         for (let j = 0; j < bookmarkTags.length; j++) {
             //console.log(bookmarkList[bookmarkTags[j]]);
             bookmark = bookmarkList[bookmarkTags[j]];
             viewbms[j] = [];
             for (let i = 0; i < bookmark.length; i++) {
-                //   console.log( viewbms[j][i]);
+
                 viewbms[j][i] = getNote(bookmark[i]);
             }
         }
@@ -132,7 +147,7 @@
         bookmark = bookmarkList[selectedTag];
         viewbm = viewbms[bookmarkTags.indexOf(selectedTag)];
         console.log(typeof bookmark);
-        //console.log( eventList[bookmark[0]].content);
+ 
         console.log(getNote(bookmark[0]));
     }
 
@@ -143,11 +158,11 @@
         let note = {};
         note.noteid = nip19.noteEncode(noteID);
         try {
-            // @ts-ignore
+         
             const thisEvent = eventList[noteID];
             note.content = thisEvent.content;
             note.date = new Date(thisEvent.created_at * 1000).toLocaleString();
-            // @ts-ignore
+       
             const thisProfile = profiles[thisEvent.pubkey];
             note.pubkey = nip19.npubEncode(thisProfile.pubkey);
             note.name = JSON.parse(thisProfile.content).name;
@@ -158,43 +173,42 @@
     }
 
     async function clickAddBookmark() {
-        message2="";
+        message2 = "";
         if (noteID.length < 10) {
             message2 = "noteIDを確認してください";
             return;
         }
         console.log(show);
-        
-       
+
         //noteIDをHexにしてイベントを取得
         noteHex = noteToHex(noteID);
-        if( bookmarkList[selectedTag].includes(noteHex)){
-            message2="そのIDはすでにリストの中にあるよ";
+        // @ts-ignore
+        if (bookmarkList[selectedTag].includes(noteHex)) {
+            message2 = "そのIDはすでにリストの中にあるよ";
             console.log(message2);
             return;
         }
         show.set(true);
         const thisEvent = await getSingleEvent(noteHex);
         console.log(thisEvent);
-        showModalData=thisEvent.content;
-        
+        showModalData = thisEvent.content;
+
         //イベントプレビューを表示して
         //このリレーのこのタグに追加しますかYesOrNo表示
         //イエスで追加させる
     }
-    function closeModal(){
-   
-    show.set(false);
-    console.log($show);
-}
-async function WriteEvent(){
-    show.set(false);
-     //イエスで追加させる
-     const pushEvent=bookmarks[bookmarkTags.indexOf(selectedTag)];
-   
-     await postEvent(noteHex, pushEvent,[relay]);
-    onClickGetTags();
-}
+    function closeModal() {
+        show.set(false);
+        console.log($show);
+    }
+    async function WriteEvent() {
+        show.set(false);
+        //イエスで追加させる
+        const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
+
+        await postEvent(noteHex, pushEvent, [relay]);
+        onClickGetTags();
+    }
 </script>
 
 <!------------------------------------------------------>
@@ -226,24 +240,24 @@ async function WriteEvent(){
     {#if viewbm.length === 0}
         <div>{message}</div>
     {:else}
-    <hr />
+        <hr />
 
-    <div class="input">
-        noteID:
-        <input type="text" bind:value={noteID} placeholder="note1..." />
+        <div class="input">
+            noteID:
+            <input type="text" bind:value={noteID} placeholder="note1..." />
 
-        <button on:click={clickAddBookmark}>AddBookmark</button>
-    </div>
-    <Modal data={showModalData}>
-        <div class="modal-footer"> 
-            relay [{relay}] の bookmarkTag [{selectedTag}] に追加
-        <button on:click={WriteEvent}>OK </button>
-        <button on:click={closeModal}>Cancel </button>
+            <button on:click={clickAddBookmark}>AddBookmark</button>
         </div>
-    </Modal>
-    <div>{message2}</div>
-    <!---------------------------------------------------------------------------->
-    <hr />
+        <Modal data={showModalData}>
+            <div class="modal-footer">
+                relay [{relay}] の bookmarkTag [{selectedTag}] に追加
+                <button on:click={WriteEvent}>OK </button>
+                <button on:click={closeModal}>Cancel </button>
+            </div>
+        </Modal>
+        <div>{message2}</div>
+        <!---------------------------------------------------------------------------->
+        <hr />
         <div class="setTag">
             <div class="dropdownTags">
                 tag:
@@ -284,13 +298,12 @@ async function WriteEvent(){
                 </div>
             {/each}
         </div>
- 
     {/if}
 </main>
 
 <!------------------------------------------------------>
 <style>
-     hr {
+    hr {
         margin: 20px 0;
     }
     .note {
@@ -355,38 +368,4 @@ async function WriteEvent(){
         text-decoration: none;
     }
 
-    /* 
-.note {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.iconArea {
-  margin-right: 10px;
-   width: 100px;
-}
-
-.icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.content, .name {
-  margin: 0;
-}
-
-.name {
-  font-weight: bold;
-  font-size: 18px;
-  margin-bottom: 5px;
-}
-
-.content {
-  
-  font-size: 14px;
-  color: gray;
-}  */
 </style>

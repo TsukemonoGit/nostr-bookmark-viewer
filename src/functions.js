@@ -2,7 +2,9 @@ import { nip19, relayInit, SimplePool ,getEventHash} from 'nostr-tools'
 
 /**
  * @param {string} author
- * @param {string} relay
+ * @param {string} relay 
+ * @return {Promise<import("nostr-tools").Event[]>} 
+ * - kind30001のタグごとのイベントex.[{tag:pinのイベント全体},{tag:bookmarkのイベント全体}]
  */
 export async function getBookmarks(author, relay) {
 
@@ -78,6 +80,8 @@ export async function getBookmarks(author, relay) {
 
 /**
  * @param {string} pubkey
+ * pubkeyがHexじゃなかったらHexに変換するやつ
+ * @return {string}
  */
 export function pubToHex(pubkey) {
     let author = pubkey;
@@ -94,12 +98,14 @@ export function pubToHex(pubkey) {
 }
 /**
  * @param {string} noteId
+ * noteIDがHexじゃなかったらHexにするやつ
+ * @return {string}
  */
 export function noteToHex(noteId) {
     let noteHex = noteId;
-    console.log(noteId.slice(0, 4))
+    //console.log(noteId.slice(0, 4))
     if (noteId.slice(0, 4) == "note") {
-        console.log(noteId.slice(0, 4))
+        //console.log(noteId.slice(0, 4))
         try {
             noteHex = nip19.decode(noteId).data.toString();
         } catch (error) {
@@ -108,23 +114,22 @@ export function noteToHex(noteId) {
     }
     return noteHex;
 }
+
 /**
- * @param {string | any[]} bookmark
+ * @param {import("nostr-tools").Event[]} bookmark [{tag:pinのイベント全体},{tag:bookmarkのイベント全体}]
+ * @return {{ [key: string]: string[]}} {tag: eventID[]]} のオブジェクト
  */
 export function formatBookmark(bookmark) {
-    /*
-    * @param {string | any[]} formatBookmark
-    */
-    let formatBookmark = {};
-
+ /**
+  * @type {{[key:string]:string[]}}
+  */
+    let fBookmark={};
     for (let i = 0; i < bookmark.length; i++) {
-        const bookmarkObjs = bookmark[i].tags.slice(1).map((/** @type {string[]} */ tag) => tag[1]);
-        // @ts-ignore
-        // formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
-        formatBookmark[bookmark[i].tags[0][1]] = bookmarkObjs
-
+        const bookmarkObjs = bookmark[i].tags.slice(1).map((tag) => tag[1]);
+        const index=bookmark[i].tags[0][1];
+        fBookmark[index] = bookmarkObjs
     }
-    return formatBookmark;
+    return fBookmark;
 }
 
 
@@ -137,25 +142,22 @@ let RelaysforSeach = [
 ];
 
 /**
-* @param {any} bookmarkList
+* @param {{ [x: string]: string[]}} bookmarkList
+* @return {Promise<[{[key:string]: import("nostr-tools").Event}, string[]]>};
 */
 export async function getEvent(bookmarkList) {
     /**
      * @type {string[]}
      */
     let pubkeys = [];
-
-    let filter = [{ ids: [] }];
-    //let eventIds={};
-    //eventIds[0] = bookmarkList[Object.keys(bookmarkList)[0]];
+    let filter = [{ ids: [""] }];
     let idList = [];
 
-    // @ts-ignore
     idList = (bookmarkList[Object.keys(bookmarkList)[0]]);
     //idList[bookmarkList[Object.keys(bookmarkList)[0]]]="";
     if (Object.keys(bookmarkList).length > 0) {
         for (let i = 1; i < Object.keys(bookmarkList).length; i++) {
-            // @ts-ignore
+           
             idList = [...idList, ...bookmarkList[Object.keys(bookmarkList)[i]]];
             //      idList[bookmarkList[Object.keys(bookmarkList)[i]]]="";
             //    eventIds[i] = bookmarkList[Object.keys(bookmarkList)[i]];
@@ -168,7 +170,7 @@ export async function getEvent(bookmarkList) {
     }, {});
     
 
-    // @ts-ignore
+   
     filter[0].ids = idList;
 
     const pool = new SimplePool();
@@ -180,12 +182,12 @@ export async function getEvent(bookmarkList) {
         }, 5000);
 
         sub.on('event', event => {
+            // @ts-ignore
             eventList[event.id] = event;
             if (!pubkeys.includes(event.pubkey)) {
                 pubkeys.push(event.pubkey);
             }
-            // this will only be called once the first time the event is received
-            // ...
+
         });
         sub.on("eose", () => {
             sub.unsub(); //イベントの購読を停止
@@ -195,7 +197,7 @@ export async function getEvent(bookmarkList) {
         });
 
     });
-    console.log(eventList);
+    //console.log(eventList);
 
     await result;// result プロミスの解決を待つ
     return result;
@@ -204,6 +206,7 @@ export async function getEvent(bookmarkList) {
 
 /**
 * @param {string[]} pubkeyList
+* @return {Promise<{[key:string]:import("nostr-tools").Event}>} key:pubkeyごとのprofileEvent
 */
 export async function getProfile(pubkeyList) {
     let profiles = pubkeyList.reduce((list, id) => {
@@ -250,6 +253,7 @@ export async function getProfile(pubkeyList) {
  * @param {any} noteID
  * @param {import("nostr-tools").Event} _event
  * @param {any} relays
+ * 
  */
 export async function postEvent(noteID, _event, relays) {
     console.log(_event);
