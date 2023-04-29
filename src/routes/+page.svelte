@@ -125,25 +125,26 @@
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
         let localProfiles;
+        let getPubkeyList=[];
         if (localProfilesString !== null) {
             localProfiles = await JSON.parse(localProfilesString);
             console.log(localProfiles);
             console.log(localProfiles.length);
-            const pubLen = pubkeyList.length;
-            let index=0;
-            for (let i = 0; i < pubLen; i++) {
+
+            
+            for (let i = 0; i < pubkeyList.length; i++) {
                 console.log(pubkeyList[i]);
                 if ( pubkeyList[i] in localProfiles  && localProfiles[i]!=="") {
-                    pubkeyList.splice(i, 1);
-            
-                }else{index++;}
+                }else{
+                    getPubkeyList.push(pubkeyList[i]);
+                }
             }
-        }
-        console.log(pubkeyList.length);
-        console.log(pubkeyList);
+        }else{getPubkeyList=pubkeyList;}
+        console.log(getPubkeyList.length);
+        console.log(getPubkeyList);
         console.log(localProfiles);
-        if(pubkeyList.length>0){
-        profiles = await getProfile(pubkeyList); //key=pubkey,value=profile
+        if(getPubkeyList.length>0){
+        profiles = await getProfile(getPubkeyList); //key=pubkey,value=profile
         }
         if (localProfilesString !== null) {
            // profiles = { ...localProfiles, ...profiles };
