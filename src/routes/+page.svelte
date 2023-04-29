@@ -248,13 +248,13 @@
     <div class="input">
         pubkey:
         <input type="text" bind:value={pubkey} placeholder="npub or hex" />
-        or get with nip07
+        or get with NIP-07
         <button on:click={onClickGetPubkey}>GetPubkey</button>
     </div>
     <div class="setRelay">
         setRelay:
         <input type="text" bind:value={relay} placeholder="wss://..." />
-        or set with list
+        or set with list (NIP-07)
 
         <select bind:value={relay} class="relayList">
             {#each relays as relaylist}
@@ -277,11 +277,11 @@
             noteID:
             <input type="text" bind:value={noteID} placeholder="note1..." />
 
-            <button on:click={clickAddBookmark}>AddBookmark</button>
+            <button on:click={clickAddBookmark}>AddList</button>
         </div>
         <Modal data={showModalData}>
             <div class="modal-footer">
-                relay [{relay}] の bookmarkTag [{selectedTag}] に追加
+                relay [{relay}] の ListTag [{selectedTag}] に追加
                 <button on:click={WriteEvent}>OK </button>
                 <button on:click={closeModal}>Cancel </button>
             </div>

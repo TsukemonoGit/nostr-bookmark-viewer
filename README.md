@@ -1,4 +1,4 @@
-# nostr-bookmark-viewer
+# nostr-Lists-viewer
 
 nostrのkind30001に保存されている諸々を取得、更新したい
 
@@ -15,7 +15,9 @@ nostrのkind30001に保存されている諸々を取得、更新したい
 - [ ] 任意のtagを削除
 
 ## 関連NIP
-- [NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md "nip-51")
-Lists
+- [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md "nip-07")
+window.nostr capability for web browsers
 - [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md "nip-09")
 Event Deletion
+- [NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md "nip-51")
+Lists
