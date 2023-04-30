@@ -103,15 +103,28 @@ export function pubToHex(pubkey) {
  */
 export function noteToHex(noteId) {
     let noteHex = noteId;
+    console.log(noteHex);
+   console.log(nip19.decode(noteId))
     //console.log(noteId.slice(0, 4))
-    if (noteId.slice(0, 4) == "note" || noteId.slice(0, 4) == "neve") {
+    if (noteId.slice(0, 4) == "note") {
         //console.log(noteId.slice(0, 4))
         try {
             noteHex = nip19.decode(noteId).data.toString();
+           
         } catch (error) {
             throw new Error("error");
+            
+        }
+    }else if(noteId.slice(0,4)=="neve"){
+        try{
+            // @ts-ignore
+            noteHex=nip19.decode(noteId).data.id;
+        }catch{
+            throw new Error("error");
+            
         }
     }
+    console.log(noteHex);
     return noteHex;
 }
 

@@ -208,6 +208,7 @@
     }
 
     async function clickAddBookmark() {
+        showModalData="";
         message2 = "";
         if (noteID.length < 10) {
             message2 = "noteIDを確認してください";
@@ -217,6 +218,7 @@
 
         //noteIDをHexにしてイベントを取得
         noteHex = noteToHex(noteID);
+        console.log(noteHex);
         // @ts-ignore
         if (bookmarkList[selectedTag].includes(noteHex)) {
             message2 = "そのIDはすでにリストの中にあるよ";
@@ -401,7 +403,7 @@
                             <div class="note-menu" style="position: relative;">
                                 <button
                                     on:click={() => toggleMenu(index)}
-                                    class="menu-button">💬</button
+                                    class="menu-button">▼</button
                                 >
                                 <!-- メニューの内容 -->
                                 {#if book.isMenuOpen === true}
@@ -513,7 +515,7 @@
         position: absolute;
         top: 100%;
         right: 0;
-        width: 300%;
+        width: 330%;
         background-color: white;
         border: 1px solid black;
         padding: 2px 5px 2px 5px;
@@ -532,6 +534,6 @@
         color: white;
     }
     .menu-button {
-        padding: 8px;
+        padding: 3px 8px 3px 8px;
     }
 </style>
