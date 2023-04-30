@@ -73,7 +73,7 @@
      */
     let showModalData = "";
     async function onClickGetPubkey() {
-        console.log("click";
+        
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
         console.log(pubkey);
