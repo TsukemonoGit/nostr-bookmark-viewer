@@ -326,3 +326,15 @@ export async function getSingleEvent(noteHexId){
     await result;// result プロミスの解決を待つ
     return result;
 }
+
+
+/**
+ * @param {string} hexid
+ * @param {import("nostr-tools").Event} _event
+ * @param {any} relays
+ * 
+ */
+export async function removeEvent(hexid,_event,relays){
+console.log(hexid);
+    return ;
+}

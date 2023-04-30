@@ -11,6 +11,7 @@
         postEvent,
         noteToHex,
         getSingleEvent,
+        removeEvent,
     } from "../functions.js";
 
     //let showModal = false;
@@ -186,6 +187,7 @@
      */
     function getNote(noteID) {
         let note = {};
+        note.id=noteID;
         note.noteid = nip19.noteEncode(noteID);
         try {
             const thisEvent = eventList[noteID];
@@ -253,25 +255,55 @@
     let preIndex;
 
     let menuItems = [
-        { label: "Copy neventID" },
-        { label: "Open nosTx"},
+        { label: "Copy noteID" },
+        { label: "Open nosTx" },
         { label: "Remove from list" },
     ];
     /**
      * @param {number} index
      */
     function toggleMenu(index) {
-        console.log(viewbm);
-        if (preIndex!==null && index !== preIndex) {
+       // console.log(viewbm);
+        if (preIndex !== null && index !== preIndex) {
             try {
                 viewbm[preIndex].isMenuOpen = false;
-            } catch {
-                 }
+            } catch {}
             viewbm[index].isMenuOpen = !viewbm[index].isMenuOpen;
         } else {
             viewbm[index].isMenuOpen = !viewbm[index].isMenuOpen;
         }
         preIndex = index;
+    }
+
+    /**
+     * @param {number} menu
+     * @param {number} index
+     */
+    function onClickMenuItem(index, menu) {
+        switch (menu) {
+            case 0: // "Copy neventID"
+                navigator.clipboard.writeText(viewbm[index].noteid).then(
+                    () => {
+                        // コピーに成功したときの処理
+                        console.log("copy" + viewbm[index].noteid);
+                    },
+                    () => {
+                        // コピーに失敗したときの処理
+                        console.log("コピー失敗");
+                    }
+                );
+                break;
+            case 1://  label: "Open nosTx" },
+                window.open('https://nostx.shino3.net/'+ viewbm[index].noteid, '_blank');
+ 
+                label: break;
+            case 2:   // label: "Remove from list" }
+            const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
+            removeEvent(viewbm[index].id, pushEvent, [relay]);
+                label: break;
+            default:
+                console.log("errorかも");
+        }
     }
 </script>
 
@@ -361,16 +393,26 @@
                                 >
                             </div>
                             <div class="note-menu" style="position: relative;">
-                                <button on:click={() => toggleMenu(index)}
+                                <button
+                                    on:click={() => toggleMenu(index)}
                                     class="menu-button">💬</button
                                 >
                                 <!-- メニューの内容 -->
                                 {#if book.isMenuOpen === true}
                                     <div class="menu-overlay">
                                         <!-- メニューのコンテンツ -->
-                                        {#each menuItems as item}
+                                        {#each menuItems as item, menu}
                                             <div class="menu-item">
-                                                {item.label}
+                                                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                                <div
+                                                    on:click={() =>
+                                                        onClickMenuItem(
+                                                            index,
+                                                            menu
+                                                        )}
+                                                >
+                                                    {item.label}
+                                                </div>
                                             </div>
                                         {/each}
                                     </div>
@@ -483,7 +525,7 @@
         background-color: gray;
         color: white;
     }
-    .menu-button{
+    .menu-button {
         padding: 8px;
     }
 </style>
