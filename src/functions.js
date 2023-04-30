@@ -335,6 +335,37 @@ export async function getSingleEvent(noteHexId){
  * 
  */
 export async function removeEvent(hexid,_event,relays){
-console.log(hexid);
-    return ;
+
+//const removeNote = ['e', hexid];
+//console.log(removeNote);
+let tags=_event.tags;
+console.log(tags);
+
+tags = tags.filter(tags => tags[1] !== hexid);
+
+
+// @ts-ignore
+const event = await window.nostr.signEvent({
+    content: _event.content,
+    kind: _event.kind,
+    pubkey: _event.pubkey,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: tags,
+});
+event.id = getEventHash(event);
+const pool = new SimplePool();
+let pub = pool.publish(relays,event);
+pub.on("ok", () => {
+    console.log(`${relays.url} has accepted our event`);
+ });
+// @ts-ignore
+pub.on("failed", (reason) => {
+    console.log(
+        `failed to publish to: ${reason}`
+    );
+  
+});
+
+
+return;
 }

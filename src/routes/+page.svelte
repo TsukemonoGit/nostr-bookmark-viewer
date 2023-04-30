@@ -187,7 +187,7 @@
      */
     function getNote(noteID) {
         let note = {};
-        note.id=noteID;
+        note.id = noteID;
         note.noteid = nip19.noteEncode(noteID);
         try {
             const thisEvent = eventList[noteID];
@@ -263,7 +263,7 @@
      * @param {number} index
      */
     function toggleMenu(index) {
-       // console.log(viewbm);
+        // console.log(viewbm);
         if (preIndex !== null && index !== preIndex) {
             try {
                 viewbm[preIndex].isMenuOpen = false;
@@ -279,7 +279,7 @@
      * @param {number} menu
      * @param {number} index
      */
-    function onClickMenuItem(index, menu) {
+    async function onClickMenuItem(index, menu) {
         switch (menu) {
             case 0: // "Copy neventID"
                 navigator.clipboard.writeText(viewbm[index].noteid).then(
@@ -293,14 +293,20 @@
                     }
                 );
                 break;
-            case 1://  label: "Open nosTx" },
-                window.open('https://nostx.shino3.net/'+ viewbm[index].noteid, '_blank');
- 
-                label: break;
-            case 2:   // label: "Remove from list" }
-            const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
-            removeEvent(viewbm[index].id, pushEvent, [relay]);
-                label: break;
+            case 1: //  label: "Open nosTx" },
+                window.open(
+                    "https://nostx.shino3.net/" + viewbm[index].noteid,
+                    "_blank"
+                );
+
+                break;
+            case 2: // label: "Remove from list" }
+                const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
+                await removeEvent(viewbm[index].id, pushEvent, [relay]);
+                setTimeout(() => {
+                    onClickGetTags();
+                }, 500);
+                break;
             default:
                 console.log("errorかも");
         }
