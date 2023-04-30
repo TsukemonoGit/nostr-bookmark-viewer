@@ -8,7 +8,7 @@ nostrのkind30001に保存されている諸々を取得、更新したい
 
 - [x] noteIDから表示中のtagにnoteを追加
 
-- [ ] 特定のnoteを表示中のtagから削除
+- [x] 特定のnoteを表示中のtagから削除
 
 - [ ] 新規tagを追加
 

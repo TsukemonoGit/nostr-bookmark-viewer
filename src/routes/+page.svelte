@@ -121,8 +121,8 @@
 
         //string[] pubkeyList
         const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
-        console.log(pubkeyList);
-        console.log(pubkeyList.length);
+       // console.log(pubkeyList);
+       // console.log(pubkeyList.length);
 
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
@@ -130,8 +130,8 @@
         let getPubkeyList = [];
         if (localProfilesString !== null) {
             localProfiles = await JSON.parse(localProfilesString);
-            console.log(localProfiles);
-            console.log(localProfiles.length);
+        //    console.log(localProfiles);
+        //    console.log(localProfiles.length);
 
             for (let i = 0; i < pubkeyList.length; i++) {
                 if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {
@@ -156,7 +156,7 @@
 
         console.log(eventList);
         //console.log(pubkeyList);
-        console.log(profiles);
+     //   console.log(profiles);
 
         //（セレクトタグの初期値）とりあえずゼロ個目をセレクトタグにしておく
         selectedTag = bookmarkTags[0];
@@ -288,7 +288,7 @@
                 navigator.clipboard.writeText(viewbm[index].noteid).then(
                     () => {
                         // コピーに成功したときの処理
-                        console.log("copy" + viewbm[index].noteid);
+                        console.log("copyed: " + viewbm[index].noteid);
                     },
                     () => {
                         // コピーに失敗したときの処理
@@ -516,10 +516,11 @@
         position: absolute;
         top: 100%;
         right: 0;
-        width: 330%;
+        width: 350%;
         background-color: white;
         border: 1px solid black;
         padding: 2px 5px 2px 5px;
+        z-index: 10;
     }
 
     .menu-item {
