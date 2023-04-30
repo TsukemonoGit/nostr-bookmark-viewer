@@ -13,7 +13,7 @@
         getSingleEvent,
     } from "../functions.js";
 
-    let showModal = false;
+    //let showModal = false;
 
     let pubkey = "";
     let author = "";
@@ -121,33 +121,33 @@
         const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
         console.log(pubkeyList);
         console.log(pubkeyList.length);
-           
+
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
         let localProfiles;
-        let getPubkeyList=[];
+        let getPubkeyList = [];
         if (localProfilesString !== null) {
             localProfiles = await JSON.parse(localProfilesString);
             console.log(localProfiles);
             console.log(localProfiles.length);
 
-            
             for (let i = 0; i < pubkeyList.length; i++) {
-            
-                if ( pubkeyList[i] in localProfiles  && localProfiles[i]!=="") {
-                }else{
+                if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {
+                } else {
                     getPubkeyList.push(pubkeyList[i]);
                 }
             }
-        }else{getPubkeyList=pubkeyList;}
+        } else {
+            getPubkeyList = pubkeyList;
+        }
         console.log(getPubkeyList.length);
-  
-        if(getPubkeyList.length>0){
-        profiles = await getProfile(getPubkeyList); //key=pubkey,value=profile
+
+        if (getPubkeyList.length > 0) {
+            profiles = await getProfile(getPubkeyList); //key=pubkey,value=profile
         }
         if (localProfilesString !== null) {
-           // profiles = { ...localProfiles, ...profiles };
-           profiles = Object.assign({},localProfiles, profiles );
+            // profiles = { ...localProfiles, ...profiles };
+            profiles = Object.assign({}, localProfiles, profiles);
         }
         //localstorageに保存
         localStorage.setItem("profile", JSON.stringify(profiles));
@@ -197,8 +197,10 @@
             note.name = JSON.parse(thisProfile.content).name;
             note.display_name = JSON.parse(thisProfile.content).display_name;
             note.icon = JSON.parse(thisProfile.content).picture;
+            note.isMenuOpen = false; // メニューの開閉状態を追跡するフラグ
         } catch {
             console.log("getnoteでエラー出てる");
+            note.isMenuOpen = false; // メニューの開閉状態を追跡するフラグ
         }
         return note;
     }
@@ -238,7 +240,38 @@
         const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
 
         await postEvent(noteHex, pushEvent, [relay]);
-        onClickGetTags();
+
+        // 0.5秒待機する
+        setTimeout(() => {
+            onClickGetTags();
+        }, 500);
+    }
+
+    /**
+     * @type {number}
+     */
+    let preIndex;
+
+    let menuItems = [
+        { label: "Copy neventID" },
+        { label: "Open nosTx"},
+        { label: "Remove from list" },
+    ];
+    /**
+     * @param {number} index
+     */
+    function toggleMenu(index) {
+        console.log(viewbm);
+        if (preIndex!==null && index !== preIndex) {
+            try {
+                viewbm[preIndex].isMenuOpen = false;
+            } catch {
+                 }
+            viewbm[index].isMenuOpen = !viewbm[index].isMenuOpen;
+        } else {
+            viewbm[index].isMenuOpen = !viewbm[index].isMenuOpen;
+        }
+        preIndex = index;
     }
 </script>
 
@@ -275,7 +308,11 @@
 
         <div class="input">
             noteID:
-            <input type="text" bind:value={noteID} placeholder="note1..." />
+            <input
+                type="text"
+                bind:value={noteID}
+                placeholder="note1...|nevent..."
+            />
 
             <button on:click={clickAddBookmark}>AddList</button>
         </div>
@@ -320,8 +357,24 @@
                                     href="https://nostx.shino3.net/{book.noteid}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="date">{book.date}</a
+                                    class="date">{book.date} 🔗</a
                                 >
+                            </div>
+                            <div class="note-menu" style="position: relative;">
+                                <button on:click={() => toggleMenu(index)}
+                                    class="menu-button">💬</button
+                                >
+                                <!-- メニューの内容 -->
+                                {#if book.isMenuOpen === true}
+                                    <div class="menu-overlay">
+                                        <!-- メニューのコンテンツ -->
+                                        {#each menuItems as item}
+                                            <div class="menu-item">
+                                                {item.label}
+                                            </div>
+                                        {/each}
+                                    </div>
+                                {/if}
                             </div>
                         </div>
                         <div class="content">{book.content}</div>
@@ -352,6 +405,7 @@
         margin-right: 5px;
     }
     .note-top-area {
+        width: 100%;
         display: flex;
     }
     .icon-area {
@@ -364,24 +418,31 @@
     }
 
     .note-top {
-        width: 70%;
         font-weight: bold;
     }
     .note-date {
-        width: 30%;
+        margin-left: auto;
         text-align: end;
-    }
 
+        /*  text-shadow: 0.5px 0.5px 0.5px gray;
+        text-shadow: 1px 1px 2px black, 0 0 0em blue, 0 0 0.2em lightgray;*/
+    }
+    .note-menu {
+        width: fit-content;
+        font-weight: bold;
+        margin-left: 5px;
+
+        /*text-shadow: 0.5px 0.5px 0.5px gray;*/
+    }
     .content {
         margin-top: 10px;
 
         white-space: pre-wrap;
     }
     .date {
-        display: inline;
-        text-align: right;
         font-weight: bold;
         font-size: smaller;
+        padding: 5px;
     }
     .display_name {
         display: inline;
@@ -395,7 +456,34 @@
         font-size: smaller;
     }
     a {
-        color: rgb(74, 115, 168);
+        color: cadetblue;
         text-decoration: none;
+    }
+
+    /* メニューのスタイル */
+    .menu-overlay {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 300%;
+        background-color: white;
+        border: 1px solid black;
+        padding: 2px 5px 2px 5px;
+    }
+
+    .menu-item {
+        font-weight: normal;
+        font-size: smaller;
+        margin: 2px 0px 2px 0px;
+        padding-right: 5px;
+        cursor: pointer;
+    }
+
+    .menu-item:hover {
+        background-color: gray;
+        color: white;
+    }
+    .menu-button{
+        padding: 8px;
     }
 </style>
