@@ -10,9 +10,11 @@ nostrのkind30001に保存されている[Categorized Bookmarks](https://github.
 
 - [x] ブックマークの削除：指定されたnoteを表示中のブックマークから削除
 
-- [ ] 新規ブックマークカテゴリーを追加
+- [x] 新規ブックマークカテゴリーを追加
 
-- [ ] 任意のブックマークカテゴリーを削除
+- [x] 任意のブックマークカテゴリーを削除
+
+- [ ] レイアウトどうにかして
 
 ## 関連NIP
 - [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md "nip-07")
