@@ -143,11 +143,16 @@
             for (let item of idList){
                 if(!(item in eventList)){
                     tmpidList.push(item);
+                // @ts-ignore
+                }else if(eventList[item]===""){
+                    //イベントリストにあってもイベント取れてなかったら追加する
+                    tmpidList.push(item);
+                    console.log(eventList[item]);
                 }
             }
             idList=tmpidList;
         }
-        console.log(idList);
+       // console.log(idList);
         //tagによらず全部のnoteを取ってくる
         const newBookmarkListEvent = await getEvent(idList); //[{key=ID,value=event],,},{}]
         
