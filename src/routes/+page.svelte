@@ -339,6 +339,10 @@
             return;
         }
         await createNewTag(newCategoryName,author,[relay]);
+        //再読込
+        setTimeout(() => {
+                    onClickGetTags();
+                }, 500);
     }
 
     /**
@@ -393,7 +397,7 @@
     <div class="setting">
         <button on:click={onClicksStting}>↑設定変更</button>
     </div>
-    
+
     {#if !cantSetting}
     <div>{message}</div>
 {:else}
