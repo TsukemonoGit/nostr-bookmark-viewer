@@ -13,6 +13,7 @@
         getSingleEvent,
         removeEvent,
         createNewTag,
+        DereteTag
     } from "../functions.js";
 
     //let showModal = false;
@@ -195,6 +196,7 @@
      * @param {string} noteID
      */
     function getNote(noteID) {
+        if(noteID==null)return;
         let note = {};
         note.id = noteID;
         note.noteid = nip19.noteEncode(noteID);
@@ -329,13 +331,13 @@
     async function clickCreateTag() {
         //カテゴリ名チェック
         if (newCategoryName === "") {
-            message2 = "カテゴリ名を入力してください";
-           console.log(message2);
+            message = "カテゴリ名を入力してください";
+           console.log(message);
             return;
         } else if (bookmarkTags.includes(newCategoryName)) {
-            message2 =
+            message =
                 "すでに存在するカテゴリーです。別の名前を入力してください";
-                console.log(message2);
+                console.log(message);
             return;
         }
         await createNewTag(newCategoryName,author,[relay]);
@@ -354,6 +356,23 @@
         if (!pattern.test(input)) {
             event.target.value = input.replace(/[^a-zA-Z0-9]/g, "");
         }
+    }
+
+    async function deleteTagEvent(){
+        deleteCheckMenu=false;
+        const deleteTag = selectedTag;
+        console.log(deleteTag);
+        const deleteEventId= bookmarks[bookmarkTags.indexOf(deleteTag)].id;
+        console.log(deleteEventId);
+        await DereteTag(deleteEventId,author,[relay]);
+         //再読込
+         setTimeout(() => {
+                    onClickGetTags();
+                }, 500);
+    }
+    let deleteCheckMenu=false;
+    function deleteCheck(){
+        deleteCheckMenu=!deleteCheckMenu;
     }
 </script>
 
@@ -399,9 +418,9 @@
     </div>
 
     {#if !cantSetting}
-    <div>{message}</div>
+   <div></div>
 {:else}
-   
+<div style="color:red;">{message}</div>
     <div class="category">カテゴリー新規作成</div>
     <div class="input">
         Category name:
@@ -457,6 +476,15 @@
                 </select>
             </div>
         </div>
+        <!---------------------------------------------------------------------->
+        <div class = "delete" style="position:relative">
+            <button on:click={deleteCheck}>タグごと全消しdelete tag'{selectedTag}'</button>
+            {#if deleteCheckMenu}
+            消していいの？
+            <button on:click={deleteTagEvent}>OK</button>
+            {/if}
+        </div>
+        <!---------------------------------------------------------------------->
         <div class="list">
             {#each viewbm as book, index}
                 <div class="note">
