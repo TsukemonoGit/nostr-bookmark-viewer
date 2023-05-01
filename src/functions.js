@@ -254,6 +254,7 @@ export async function getProfile(pubkeyList) {
  * @param {any} noteID
  * @param {import("nostr-tools").Event} _event
  * @param {any} relays
+ * @return 成功したら送ったeventを返すよ
  * 
  */
 export async function postEvent(noteID, _event, relays) {
@@ -264,6 +265,7 @@ export async function postEvent(noteID, _event, relays) {
     const pushNote = ['e', noteID];
     _event.tags.push(pushNote);
 
+
     // @ts-ignore
     const event = await window.nostr.signEvent({
         content: _event.content,
@@ -273,21 +275,29 @@ export async function postEvent(noteID, _event, relays) {
         tags: _event.tags,
     });
     event.id = getEventHash(event);
+
     const pool = new SimplePool();
     let pub = pool.publish(relays, event);
-    pub.on("ok", () => {
-        console.log(`${relays.url} has accepted our event`);
+    return new Promise((resolve) => {
+        const timeoutID = setTimeout(() => {
+            resolve(null);
+        }, 5000);
+
+        pub.on("ok", () => {
+            console.log(`${relays.url} has accepted our event`);
+            clearTimeout(timeoutID);
+            resolve(event);
+            
+        });
+
+        // @ts-ignore
+        pub.on("failed", (reason) => {
+            console.log(`failed to publish to: ${reason}`);
+            clearTimeout(timeoutID);
+            resolve(null);
+           
+        });
     });
-    // @ts-ignore
-    pub.on("failed", (reason) => {
-        console.log(
-            `failed to publish to: ${reason}`
-        );
-
-    });
-
-
-    return;
 }
 
 /**
@@ -333,6 +343,7 @@ export async function getSingleEvent(noteHexId) {
  * @param {string} hexid
  * @param {import("nostr-tools").Event} _event
  * @param {any} relays
+ * @return 成功したら送ったeventを返すよ
  * 
  */
 export async function removeEvent(hexid, _event, relays) {
@@ -340,7 +351,7 @@ export async function removeEvent(hexid, _event, relays) {
     //const removeNote = ['e', hexid];
     //console.log(removeNote);
     let tags = _event.tags;
-    console.log(tags);
+    //console.log(tags);
 
     tags = tags.filter(tags => tags[1] !== hexid);
 
@@ -356,20 +367,28 @@ export async function removeEvent(hexid, _event, relays) {
     event.id = getEventHash(event);
     const pool = new SimplePool();
     let pub = pool.publish(relays, event);
-    pub.on("ok", () => {
-        console.log(`${relays.url} has accepted our event`);
+    return new Promise((resolve) => {
+        const timeoutID = setTimeout(() => {
+            resolve(null);
+        }, 5000);
+
+        pub.on("ok", () => {
+            console.log(`${relays.url} has accepted our event`);
+            clearTimeout(timeoutID);
+            resolve(event);
+            
+        });
+
+        // @ts-ignore
+        pub.on("failed", (reason) => {
+            console.log(`failed to publish to: ${reason}`);
+            clearTimeout(timeoutID);
+            resolve(null);
+           
+        });
     });
-    // @ts-ignore
-    pub.on("failed", (reason) => {
-        console.log(
-            `failed to publish to: ${reason}`
-        );
-
-    });
-
-
-    return;
 }
+
 
 
 /**
@@ -445,7 +464,7 @@ export function formatPubkeyList(eventList) {
         const key = Object.keys(item)[0];
         // @ts-ignore
         if (!pubkeyArray.includes(item[key].pubkey)) {
-              // @ts-ignore
+            // @ts-ignore
             pubkeyArray.push(item[key].pubkey);
         }
     }

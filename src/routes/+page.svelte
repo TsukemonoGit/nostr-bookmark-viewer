@@ -116,7 +116,9 @@
             message = "このリレーのkind30001にはなんもないかも";
             return;
         }
-
+        areyakoreya();
+    }
+        async function areyakoreya(){
         //eventIDからnoteを検索するために、タグごとのeventIDをまとめる
         bookmarkList = formatBookmark(bookmarks);
         console.log(bookmarkList);
@@ -202,7 +204,8 @@
         //   console.log(profiles);
 
         //（セレクトタグの初期値）とりあえずゼロ個目をセレクトタグにしておく
-        selectedTag = bookmarkTags[0];
+        if(selectedTag===""){
+        selectedTag = bookmarkTags[0];}
         console.log(selectedTag);
         //bookmark = bookmarkList[selectedTag];
 
@@ -289,12 +292,18 @@
         //イエスで追加させる
         const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
 
-        await postEvent(noteHex, pushEvent, [relay]);
-
+        const event = await postEvent(noteHex, pushEvent, [relay]);
+        console.log(event);
+        if(event!=null)
+        {
+        bookmarks[bookmarkTags.indexOf(selectedTag)]=event;
+        
+        areyakoreya();
+        }else{message2="書き込み失敗したかも"}
         // 0.5秒待機する
-        setTimeout(() => {
-            onClickGetTags();
-        }, 500);
+       // setTimeout(() => {
+       //     onClickGetTags();
+       // }, 500);
     }
 
     /**
@@ -350,10 +359,14 @@
                 break;
             case 2: // label: "Remove from list" }
                 const pushEvent = bookmarks[bookmarkTags.indexOf(selectedTag)];
-                await removeEvent(viewbm[index].id, pushEvent, [relay]);
-                setTimeout(() => {
-                    onClickGetTags();
-                }, 500);
+               const event =  await removeEvent(viewbm[index].id, pushEvent, [relay]);
+               console.log(event); 
+
+               if(event!=null){
+               bookmarks[bookmarkTags.indexOf(selectedTag)]=event;
+               areyakoreya();
+
+               }else{message2="削除に失敗したかも"}
                 break;
             default:
                 console.log("errorかも");
@@ -400,10 +413,7 @@
         const deleteEventId = bookmarks[bookmarkTags.indexOf(deleteTag)].id;
         console.log(deleteEventId);
         await DereteTag(deleteEventId, author, [relay]);
-        //再読込
-        setTimeout(() => {
-            onClickGetTags();
-        }, 500);
+        
     }
     let deleteCheckMenu = false;
     function deleteCheck() {
