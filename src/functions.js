@@ -1,4 +1,4 @@
-import { nip19, relayInit, SimplePool ,getEventHash} from 'nostr-tools'
+import { nip19, relayInit, SimplePool, getEventHash } from 'nostr-tools'
 
 /**
  * @param {string} author
@@ -72,7 +72,7 @@ export async function getBookmarks(author, relay) {
     });
 
     await result2.then(result => {
-      //  console.log(result)
+        //  console.log(result)
         return result;
     });//このリザルトはプロミスの結果に入る
     return result2;
@@ -104,24 +104,24 @@ export function pubToHex(pubkey) {
 export function noteToHex(noteId) {
     let noteHex = noteId;
     console.log(noteHex);
-   console.log(nip19.decode(noteId))
+    console.log(nip19.decode(noteId))
     //console.log(noteId.slice(0, 4))
     if (noteId.slice(0, 4) == "note") {
         //console.log(noteId.slice(0, 4))
         try {
             noteHex = nip19.decode(noteId).data.toString();
-           
+
         } catch (error) {
             throw new Error("error");
-            
+
         }
-    }else if(noteId.slice(0,4)=="neve"){
-        try{
+    } else if (noteId.slice(0, 4) == "neve") {
+        try {
             // @ts-ignore
-            noteHex=nip19.decode(noteId).data.id;
-        }catch{
+            noteHex = nip19.decode(noteId).data.id;
+        } catch {
             throw new Error("error");
-            
+
         }
     }
     console.log(noteHex);
@@ -133,13 +133,13 @@ export function noteToHex(noteId) {
  * @return {{ [key: string]: string[]}} {tag: eventID[]]} のオブジェクト
  */
 export function formatBookmark(bookmark) {
- /**
-  * @type {{[key:string]:string[]}}
-  */
-    let fBookmark={};
+    /**
+     * @type {{[key:string]:string[]}}
+     */
+    let fBookmark = {};
     for (let i = 0; i < bookmark.length; i++) {
         const bookmarkObjs = bookmark[i].tags.slice(1).map((tag) => tag[1]);
-        const index=bookmark[i].tags[0][1];
+        const index = bookmark[i].tags[0][1];
         fBookmark[index] = bookmarkObjs
     }
     return fBookmark;
@@ -155,35 +155,23 @@ let RelaysforSeach = [
 ];
 
 /**
-* @param {{ [x: string]: string[]}} bookmarkList
-* @return {Promise<[{[key:string]: import("nostr-tools").Event}, string[]]>};
+* @param { string[]} idList
+* @return {Promise<{[key:string]: import("nostr-tools").Event}>};//, string[]]>};
 */
-export async function getEvent(bookmarkList) {
+export async function getEvent(idList) {
     /**
-     * @type {string[]}
+     * 
      */
-    let pubkeys = [];
+    //let pubkeys = [];
     let filter = [{ ids: [""] }];
-    let idList = [];
 
-    idList = (bookmarkList[Object.keys(bookmarkList)[0]]);
-    //idList[bookmarkList[Object.keys(bookmarkList)[0]]]="";
-    if (Object.keys(bookmarkList).length > 0) {
-        for (let i = 1; i < Object.keys(bookmarkList).length; i++) {
-           
-            idList = [...idList, ...bookmarkList[Object.keys(bookmarkList)[i]]];
-            //      idList[bookmarkList[Object.keys(bookmarkList)[i]]]="";
-            //    eventIds[i] = bookmarkList[Object.keys(bookmarkList)[i]];
-
-        }
-    }
     let eventList = idList.reduce((/** @type {{ [x: string]: string; }} */ list, /** @type {string | number} */ id) => {
         list[id] = "";
         return list;
     }, {});
-    
 
-   
+    //console.log(eventList);
+    //console.log(idList);
     filter[0].ids = idList;
 
     const pool = new SimplePool();
@@ -191,21 +179,21 @@ export async function getEvent(bookmarkList) {
     const result = new Promise((resolve) => {
 
         const timeoutID = setTimeout(() => {
-            resolve([eventList, pubkeys]);
+            resolve(eventList);//, pubkeys]);
         }, 5000);
 
         sub.on('event', event => {
             // @ts-ignore
             eventList[event.id] = event;
-            if (!pubkeys.includes(event.pubkey)) {
-                pubkeys.push(event.pubkey);
-            }
+            //    if (!pubkeys.includes(event.pubkey)) {
+            //      pubkeys.push(event.pubkey);
+            //}
 
         });
         sub.on("eose", () => {
             sub.unsub(); //イベントの購読を停止
             clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
-            resolve([eventList, pubkeys]);
+            resolve(eventList);//, pubkeys]);
             clearTimeout(timeoutID);
         });
 
@@ -272,10 +260,10 @@ export async function postEvent(noteID, _event, relays) {
     console.log(_event);
     console.log(noteID);
     console.log(relays);
-    
+
     const pushNote = ['e', noteID];
     _event.tags.push(pushNote);
-   
+
     // @ts-ignore
     const event = await window.nostr.signEvent({
         content: _event.content,
@@ -286,31 +274,31 @@ export async function postEvent(noteID, _event, relays) {
     });
     event.id = getEventHash(event);
     const pool = new SimplePool();
-    let pub = pool.publish(relays,event);
+    let pub = pool.publish(relays, event);
     pub.on("ok", () => {
         console.log(`${relays.url} has accepted our event`);
-     });
+    });
     // @ts-ignore
     pub.on("failed", (reason) => {
         console.log(
             `failed to publish to: ${reason}`
         );
-      
+
     });
 
-   
+
     return;
 }
 
 /**
  * @param {any} noteHexId
  */
-export async function getSingleEvent(noteHexId){
-   /**
-   * @type {import("nostr-tools").Event}
-   */
+export async function getSingleEvent(noteHexId) {
+    /**
+    * @type {import("nostr-tools").Event}
+    */
     // @ts-ignore
-    let _event={};
+    let _event = {};
     let filter = [{ ids: [noteHexId] }];
     const pool = new SimplePool();
     let sub = pool.sub(RelaysforSeach, filter);
@@ -323,9 +311,9 @@ export async function getSingleEvent(noteHexId){
 
         sub.on('event', event => {
             console.log(event);
-            _event=event;
+            _event = event;
             resolve(event);
-            
+
         });
         sub.on("eose", () => {
             console.log("eose");
@@ -347,40 +335,40 @@ export async function getSingleEvent(noteHexId){
  * @param {any} relays
  * 
  */
-export async function removeEvent(hexid,_event,relays){
+export async function removeEvent(hexid, _event, relays) {
 
-//const removeNote = ['e', hexid];
-//console.log(removeNote);
-let tags=_event.tags;
-console.log(tags);
+    //const removeNote = ['e', hexid];
+    //console.log(removeNote);
+    let tags = _event.tags;
+    console.log(tags);
 
-tags = tags.filter(tags => tags[1] !== hexid);
-
-
-// @ts-ignore
-const event = await window.nostr.signEvent({
-    content: _event.content,
-    kind: _event.kind,
-    pubkey: _event.pubkey,
-    created_at: Math.floor(Date.now() / 1000),
-    tags: tags,
-});
-event.id = getEventHash(event);
-const pool = new SimplePool();
-let pub = pool.publish(relays,event);
-pub.on("ok", () => {
-    console.log(`${relays.url} has accepted our event`);
- });
-// @ts-ignore
-pub.on("failed", (reason) => {
-    console.log(
-        `failed to publish to: ${reason}`
-    );
-  
-});
+    tags = tags.filter(tags => tags[1] !== hexid);
 
 
-return;
+    // @ts-ignore
+    const event = await window.nostr.signEvent({
+        content: _event.content,
+        kind: _event.kind,
+        pubkey: _event.pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: tags,
+    });
+    event.id = getEventHash(event);
+    const pool = new SimplePool();
+    let pub = pool.publish(relays, event);
+    pub.on("ok", () => {
+        console.log(`${relays.url} has accepted our event`);
+    });
+    // @ts-ignore
+    pub.on("failed", (reason) => {
+        console.log(
+            `failed to publish to: ${reason}`
+        );
+
+    });
+
+
+    return;
 }
 
 
@@ -389,29 +377,29 @@ return;
  * @param {string} pubkey
  * @param {any} relays
  */
-export async function createNewTag(tagName,pubkey,relays){
+export async function createNewTag(tagName, pubkey, relays) {
     // @ts-ignore
     const event = await window.nostr.signEvent({
         content: "",
         kind: 30001,
         pubkey: pubkey,
         created_at: Math.floor(Date.now() / 1000),
-        tags: [['d',tagName]],
+        tags: [['d', tagName]],
     });
     event.id = getEventHash(event);
-const pool = new SimplePool();
-let pub = pool.publish(relays,event);
-pub.on("ok", () => {
-    console.log(`${relays.url} has accepted our event`);
- });
-// @ts-ignore
-pub.on("failed", (reason) => {
-    console.log(
-        `failed to publish to: ${reason}`
-    );
-});
+    const pool = new SimplePool();
+    let pub = pool.publish(relays, event);
+    pub.on("ok", () => {
+        console.log(`${relays.url} has accepted our event`);
+    });
+    // @ts-ignore
+    pub.on("failed", (reason) => {
+        console.log(
+            `failed to publish to: ${reason}`
+        );
+    });
 
-return;
+    return;
 }
 
 
@@ -420,27 +408,47 @@ return;
  * @param {string} pubkey
  * @param {any} relays
  */
-export async function DereteTag(eventID,pubkey,relays){
+export async function DereteTag(eventID, pubkey, relays) {
     // @ts-ignore
     const event = await window.nostr.signEvent({
         content: "",
         kind: 5,
         pubkey: pubkey,
         created_at: Math.floor(Date.now() / 1000),
-        tags: [['e',eventID]],
+        tags: [['e', eventID]],
     });
     event.id = getEventHash(event);
-const pool = new SimplePool();
-let pub = pool.publish(relays,event);
-pub.on("ok", () => {
-    console.log(`${relays.url} has accepted our event`);
- });
-// @ts-ignore
-pub.on("failed", (reason) => {
-    console.log(
-        `failed to publish to: ${reason}`
-    );
-});
+    const pool = new SimplePool();
+    let pub = pool.publish(relays, event);
+    pub.on("ok", () => {
+        console.log(`${relays.url} has accepted our event`);
+    });
+    // @ts-ignore
+    pub.on("failed", (reason) => {
+        console.log(
+            `failed to publish to: ${reason}`
+        );
+    });
 
-return;
+    return;
 }
+
+/**
+ * @param {{[key:string]: import("nostr-tools").Event}} eventList
+ */
+export function formatPubkeyList(eventList) {
+    /**
+         * @type {string[]}
+         */
+    let pubkeyArray = [];
+    for (let item in eventList) {
+        const key = Object.keys(item)[0];
+        // @ts-ignore
+        if (!pubkeyArray.includes(item[key].pubkey)) {
+              // @ts-ignore
+            pubkeyArray.push(item[key].pubkey);
+        }
+    }
+    return pubkeyArray;
+}
+

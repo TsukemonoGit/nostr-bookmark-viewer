@@ -13,7 +13,8 @@
         getSingleEvent,
         removeEvent,
         createNewTag,
-        DereteTag
+        DereteTag,
+        formatPubkeyList,
     } from "../functions.js";
 
     //let showModal = false;
@@ -76,7 +77,8 @@
     let showModalData = "";
     let newCategoryName = "";
     let cantSetting = false;
-
+    
+  
     async function onClickGetPubkey() {
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
@@ -119,17 +121,44 @@
         bookmarkList = formatBookmark(bookmarks);
         console.log(bookmarkList);
 
-        //tagによらず全部のnoteを取ってくる
-        const bookmarkListEvent = await getEvent(bookmarkList); //[{key=ID,value=event],,},{}]
+        //取得するイベントIDリストを作る
+        let idList = [];
+      
+        idList = bookmarkList[Object.keys(bookmarkList)[0]];
+        //idList[bookmarkList[Object.keys(bookmarkList)[0]]]="";
+        if (Object.keys(bookmarkList).length > 0) {
+            for (let i = 1; i < Object.keys(bookmarkList).length; i++) {
+                idList = [
+                    ...idList,
+                    ...bookmarkList[Object.keys(bookmarkList)[i]],
+                ];
 
+            }
+        }
+        //ここで、すでに取得しているイベントIDととってないIDを分ける
+        
+        if(eventList!=null){
+            console.log(eventList);
+            let tmpidList=[];
+            for (let item of idList){
+                if(!(item in eventList)){
+                    tmpidList.push(item);
+                }
+            }
+            idList=tmpidList;
+        }
+        console.log(idList);
+        //tagによらず全部のnoteを取ってくる
+        const newBookmarkListEvent = await getEvent(idList); //[{key=ID,value=event],,},{}]
+        
         bookmarkTags = Object.keys(bookmarkList);
-        console.log(selectedTag);
+     
 
         //{eventid:event}
-        eventList = bookmarkListEvent[0];
+        eventList = Object.assign({},eventList,newBookmarkListEvent);
 
         //string[] pubkeyList
-        const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
+        const pubkeyList = await formatPubkeyList(eventList);//newBookmarkListEvent;//[1]; //pubkeyLIst
         // console.log(pubkeyList);
         // console.log(pubkeyList.length);
 
@@ -169,6 +198,7 @@
 
         //（セレクトタグの初期値）とりあえずゼロ個目をセレクトタグにしておく
         selectedTag = bookmarkTags[0];
+        console.log(selectedTag);
         //bookmark = bookmarkList[selectedTag];
 
         //{#for each~~}につかうためのArray型に表示させるアレコレを入れる
@@ -196,7 +226,7 @@
      * @param {string} noteID
      */
     function getNote(noteID) {
-        if(noteID==null)return;
+        if (noteID == null) return;
         let note = {};
         note.id = noteID;
         note.noteid = nip19.noteEncode(noteID);
@@ -332,19 +362,19 @@
         //カテゴリ名チェック
         if (newCategoryName === "") {
             message = "カテゴリ名を入力してください";
-           console.log(message);
+            console.log(message);
             return;
         } else if (bookmarkTags.includes(newCategoryName)) {
             message =
                 "すでに存在するカテゴリーです。別の名前を入力してください";
-                console.log(message);
+            console.log(message);
             return;
         }
-        await createNewTag(newCategoryName,author,[relay]);
+        await createNewTag(newCategoryName, author, [relay]);
         //再読込
         setTimeout(() => {
-                    onClickGetTags();
-                }, 500);
+            onClickGetTags();
+        }, 500);
     }
 
     /**
@@ -358,21 +388,21 @@
         }
     }
 
-    async function deleteTagEvent(){
-        deleteCheckMenu=false;
+    async function deleteTagEvent() {
+        deleteCheckMenu = false;
         const deleteTag = selectedTag;
         console.log(deleteTag);
-        const deleteEventId= bookmarks[bookmarkTags.indexOf(deleteTag)].id;
+        const deleteEventId = bookmarks[bookmarkTags.indexOf(deleteTag)].id;
         console.log(deleteEventId);
-        await DereteTag(deleteEventId,author,[relay]);
-         //再読込
-         setTimeout(() => {
-                    onClickGetTags();
-                }, 500);
+        await DereteTag(deleteEventId, author, [relay]);
+        //再読込
+        setTimeout(() => {
+            onClickGetTags();
+        }, 500);
     }
-    let deleteCheckMenu=false;
-    function deleteCheck(){
-        deleteCheckMenu=!deleteCheckMenu;
+    let deleteCheckMenu = false;
+    function deleteCheck() {
+        deleteCheckMenu = !deleteCheckMenu;
     }
 </script>
 
@@ -410,40 +440,42 @@
             {/each}
         </select>
     </div>
-    <div class="getTags" style="display: inline; margin-left:auto; margin-right:40px">
+    <div
+        class="getTags"
+        style="display: inline; margin-left:auto; margin-right:40px"
+    >
         <button on:click={onClickGetTags}>GetCategories</button>
     </div>
-    <div class="setting" style="display: inline; margin-left:auto;" >
+    <div class="setting" style="display: inline; margin-left:auto;">
         <button on:click={onClicksStting}>↑設定変更</button>
     </div>
 
     {#if !cantSetting}
-   <div></div>
-{:else}
-<div style="color:red;">{message}</div>
-<hr />
+        <div />
+    {:else}
+        <div style="color:red;">{message}</div>
+        <hr />
 
-    <div class="category">カテゴリー新規作成</div>
-    <div class="input">
-        Category name:
-        <input
-            type="text"
-            on:input={validateInput}
-            bind:value={newCategoryName}
-            placeholder="bookmark"
-        />
+        <div class="category">カテゴリー新規作成</div>
+        <div class="input">
+            Category name:
+            <input
+                type="text"
+                on:input={validateInput}
+                bind:value={newCategoryName}
+                placeholder="bookmark"
+            />
 
-        <button on:click={clickCreateTag}>create</button>
-        <div class="category-right">
-            <ul>
-                ※一般的なカテゴリー
-                <li>bookmark: snort,amethystでのブックマーク</li>
-                <li>pin: snortでのピン留め</li>
-            </ul>
+            <button on:click={clickCreateTag}>create</button>
+            <div class="category-right">
+                <ul>
+                    ※一般的なカテゴリー
+                    <li>bookmark: snort,amethystでのブックマーク</li>
+                    <li>pin: snortでのピン留め</li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-   
         <hr />
 
         <div class="input">
@@ -467,7 +499,10 @@
         <!---------------------------------------------------------------------------->
         <hr />
         <div class="setTag" style="display: inline; margin-left:auto;">
-            <div class="dropdownTags" style="display: inline; margin-left:auto;">
+            <div
+                class="dropdownTags"
+                style="display: inline; margin-left:auto;"
+            >
                 category:
                 <select bind:value={selectedTag} on:change={onChangeTag}>
                     {#each bookmarkTags as tag}
@@ -479,11 +514,13 @@
             </div>
         </div>
         <!---------------------------------------------------------------------->
-        <div class = "delete" style="display: inline; margin-left:40px;" >
-            <button on:click={deleteCheck}>表示中のカテゴリー全消しdelete category'{selectedTag}'</button>
+        <div class="delete" style="display: inline; margin-left:40px;">
+            <button on:click={deleteCheck}
+                >表示中のカテゴリー全消しdelete category'{selectedTag}'</button
+            >
             {#if deleteCheckMenu}
-            消していいの？
-            <button on:click={deleteTagEvent}>OK</button>
+                消していいの？
+                <button on:click={deleteTagEvent}>OK</button>
             {/if}
         </div>
         <!---------------------------------------------------------------------->
@@ -542,7 +579,7 @@
             {/each}
         </div>
     {/if}
-    <hr/>
+    <hr />
     <div id="footer">
         Github: <a
             href="https://github.com/TsukemonoGit/nostr-bookmark-viewer"
@@ -556,7 +593,7 @@
             rel="noopener noreferrer">mono(Nostr)</a
         >
     </div>
-    </main>
+</main>
 
 <!------------------------------------------------------>
 <style>
