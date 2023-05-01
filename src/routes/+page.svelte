@@ -410,10 +410,10 @@
             {/each}
         </select>
     </div>
-    <div class="getTags">
+    <div class="getTags" style="display: inline; margin-left:auto; margin-right:40px">
         <button on:click={onClickGetTags}>GetTags</button>
     </div>
-    <div class="setting">
+    <div class="setting" style="display: inline; margin-left:auto;" >
         <button on:click={onClicksStting}>↑設定変更</button>
     </div>
 
@@ -421,6 +421,8 @@
    <div></div>
 {:else}
 <div style="color:red;">{message}</div>
+<hr />
+
     <div class="category">カテゴリー新規作成</div>
     <div class="input">
         Category name:
@@ -464,8 +466,8 @@
         <div>{message2}</div>
         <!---------------------------------------------------------------------------->
         <hr />
-        <div class="setTag">
-            <div class="dropdownTags">
+        <div class="setTag" style="display: inline; margin-left:auto;">
+            <div class="dropdownTags" style="display: inline; margin-left:auto;">
                 tag:
                 <select bind:value={selectedTag} on:change={onChangeTag}>
                     {#each bookmarkTags as tag}
@@ -477,7 +479,7 @@
             </div>
         </div>
         <!---------------------------------------------------------------------->
-        <div class = "delete" style="position:relative">
+        <div class = "delete" style="display: inline; margin-left:40px;" >
             <button on:click={deleteCheck}>タグごと全消しdelete tag'{selectedTag}'</button>
             {#if deleteCheckMenu}
             消していいの？
@@ -540,7 +542,21 @@
             {/each}
         </div>
     {/if}
-</main>
+    <hr/>
+    <div id="footer">
+        Github: <a
+            href="https://github.com/TsukemonoGit/nostr-bookmark-viewer"
+            target="_blank"
+            rel="noopener noreferrer">TsukemonoGit/nostr-bookmark-viewer</a
+        > <br />
+        Author:
+        <a
+            href="https://nostx.shino3.net/npub1sjcvg64knxkrt6ev52rywzu9uzqakgy8ehhk8yezxmpewsthst6sw3jqcw"
+            target="_blank"
+            rel="noopener noreferrer">mono(Nostr)</a
+        >
+    </div>
+    </main>
 
 <!------------------------------------------------------>
 <style>
