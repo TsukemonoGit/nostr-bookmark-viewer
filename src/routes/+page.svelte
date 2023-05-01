@@ -411,7 +411,7 @@
         </select>
     </div>
     <div class="getTags" style="display: inline; margin-left:auto; margin-right:40px">
-        <button on:click={onClickGetTags}>GetTags</button>
+        <button on:click={onClickGetTags}>GetCategories</button>
     </div>
     <div class="setting" style="display: inline; margin-left:auto;" >
         <button on:click={onClicksStting}>↑設定変更</button>
@@ -468,7 +468,7 @@
         <hr />
         <div class="setTag" style="display: inline; margin-left:auto;">
             <div class="dropdownTags" style="display: inline; margin-left:auto;">
-                tag:
+                category:
                 <select bind:value={selectedTag} on:change={onChangeTag}>
                     {#each bookmarkTags as tag}
                         <option value={tag} selected>
@@ -480,7 +480,7 @@
         </div>
         <!---------------------------------------------------------------------->
         <div class = "delete" style="display: inline; margin-left:40px;" >
-            <button on:click={deleteCheck}>タグごと全消しdelete tag'{selectedTag}'</button>
+            <button on:click={deleteCheck}>表示中のカテゴリー全消しdelete category'{selectedTag}'</button>
             {#if deleteCheckMenu}
             消していいの？
             <button on:click={deleteTagEvent}>OK</button>
