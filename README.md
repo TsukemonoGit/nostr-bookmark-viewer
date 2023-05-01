@@ -1,18 +1,18 @@
-# nostr-Lists-viewer
+# nostr-Categorized Bookmarks-viewer
 
-nostrのkind30001に保存されている諸々を取得、更新したい
+nostrのkind30001に保存されている[Categorized Bookmarks](https://github.com/nostr-protocol/nips/blob/master/51.md#list-event-kinds)を取得、更新したい
 
 ## 主な機能
 
-- [x] 特定のリレーからtagごとのnoteリストを取得表示
+- [x] 特定のリレーからカテゴリーごとのブックマークを取得表示
 
-- [x] noteIDから表示中のtagにnoteを追加
+- [x] ブックマークに追加：入力されたnoteIDを、表示中のブックマークの最後尾に追加
 
-- [x] 特定のnoteを表示中のtagから削除
+- [x] ブックマークの削除：指定されたnoteを表示中のブックマークから削除
 
-- [ ] 新規tagを追加
+- [ ] 新規ブックマークカテゴリーを追加
 
-- [ ] 任意のtagを削除
+- [ ] 任意のブックマークカテゴリーを削除
 
 ## 関連NIP
 - [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md "nip-07")
