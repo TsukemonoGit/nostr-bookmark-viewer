@@ -382,3 +382,34 @@ pub.on("failed", (reason) => {
 
 return;
 }
+
+
+/**
+ * @param {string} tagName
+ * @param {string} pubkey
+ * @param {any} relays
+ */
+export async function createNewTag(tagName,pubkey,relays){
+    // @ts-ignore
+    const event = await window.nostr.signEvent({
+        content: "",
+        kind: 30001,
+        pubkey: pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [['d',tagName]],
+    });
+    event.id = getEventHash(event);
+const pool = new SimplePool();
+let pub = pool.publish(relays,event);
+pub.on("ok", () => {
+    console.log(`${relays.url} has accepted our event`);
+ });
+// @ts-ignore
+pub.on("failed", (reason) => {
+    console.log(
+        `failed to publish to: ${reason}`
+    );
+});
+
+return;
+}

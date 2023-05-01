@@ -12,6 +12,7 @@
         noteToHex,
         getSingleEvent,
         removeEvent,
+        createNewTag,
     } from "../functions.js";
 
     //let showModal = false;
@@ -72,8 +73,10 @@
      * @type {string}
      */
     let showModalData = "";
+    let newCategoryName = "";
+    let cantSetting = false;
+
     async function onClickGetPubkey() {
-        
         // @ts-ignore
         pubkey = await window.nostr.getPublicKey();
         console.log(pubkey);
@@ -84,7 +87,12 @@
     }
 
     async function onClickGetTags() {
+        if (pubkey == "" || relay == "") {
+            message = "pubkey,relayを設定してください";
+            return;
+        }
         //初期化
+        cantSetting = true;
         message2 = "";
         viewbm = [];
         message = "通信中";
@@ -121,8 +129,8 @@
 
         //string[] pubkeyList
         const pubkeyList = bookmarkListEvent[1]; //pubkeyLIst
-       // console.log(pubkeyList);
-       // console.log(pubkeyList.length);
+        // console.log(pubkeyList);
+        // console.log(pubkeyList.length);
 
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
@@ -130,8 +138,8 @@
         let getPubkeyList = [];
         if (localProfilesString !== null) {
             localProfiles = await JSON.parse(localProfilesString);
-        //    console.log(localProfiles);
-        //    console.log(localProfiles.length);
+            //    console.log(localProfiles);
+            //    console.log(localProfiles.length);
 
             for (let i = 0; i < pubkeyList.length; i++) {
                 if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {
@@ -156,7 +164,7 @@
 
         console.log(eventList);
         //console.log(pubkeyList);
-     //   console.log(profiles);
+        //   console.log(profiles);
 
         //（セレクトタグの初期値）とりあえずゼロ個目をセレクトタグにしておく
         selectedTag = bookmarkTags[0];
@@ -209,7 +217,7 @@
     }
 
     async function clickAddBookmark() {
-        showModalData="";
+        showModalData = "";
         message2 = "";
         if (noteID.length < 10) {
             message2 = "noteIDを確認してください";
@@ -314,6 +322,35 @@
                 console.log("errorかも");
         }
     }
+    function onClicksStting() {
+        cantSetting = false;
+        console.log(cantSetting);
+    }
+    async function clickCreateTag() {
+        //カテゴリ名チェック
+        if (newCategoryName === "") {
+            message2 = "カテゴリ名を入力してください";
+           console.log(message2);
+            return;
+        } else if (bookmarkTags.includes(newCategoryName)) {
+            message2 =
+                "すでに存在するカテゴリーです。別の名前を入力してください";
+                console.log(message2);
+            return;
+        }
+        await createNewTag(newCategoryName,author,[relay]);
+    }
+
+    /**
+     * @param {{ target: { value: any; }; }} event
+     */
+    function validateInput(event) {
+        const pattern = /^[a-zA-Z0-9]+$/;
+        const input = event.target.value;
+        if (!pattern.test(input)) {
+            event.target.value = input.replace(/[^a-zA-Z0-9]/g, "");
+        }
+    }
 </script>
 
 <!------------------------------------------------------>
@@ -321,16 +358,28 @@
     <div class="top" style="color:red">消えるかも注意</div>
     <div class="input">
         pubkey:
-        <input type="text" bind:value={pubkey} placeholder="npub or hex" />
+        <input
+            type="text"
+            bind:value={pubkey}
+            placeholder="npub or hex"
+            disabled={cantSetting}
+        />
         or get with NIP-07
-        <button on:click={onClickGetPubkey}>GetPubkey</button>
+        <button on:click={onClickGetPubkey} disabled={cantSetting}
+            >GetPubkey</button
+        >
     </div>
     <div class="setRelay">
         setRelay:
-        <input type="text" bind:value={relay} placeholder="wss://..." />
+        <input
+            type="text"
+            bind:value={relay}
+            placeholder="wss://..."
+            disabled={cantSetting}
+        />
         or set with list (NIP-07)
 
-        <select bind:value={relay} class="relayList">
+        <select bind:value={relay} class="relayList" disabled={cantSetting}>
             {#each relays as relaylist}
                 <option value={relaylist}>
                     {relaylist}
@@ -341,10 +390,35 @@
     <div class="getTags">
         <button on:click={onClickGetTags}>GetTags</button>
     </div>
+    <div class="setting">
+        <button on:click={onClicksStting}>↑設定変更</button>
+    </div>
+    
+    {#if !cantSetting}
+    <div>{message}</div>
+{:else}
+   
+    <div class="category">カテゴリー新規作成</div>
+    <div class="input">
+        Category name:
+        <input
+            type="text"
+            on:input={validateInput}
+            bind:value={newCategoryName}
+            placeholder="bookmark"
+        />
 
-    {#if viewbm.length === 0}
-        <div>{message}</div>
-    {:else}
+        <button on:click={clickCreateTag}>create</button>
+        <div class="category-right">
+            <ul>
+                ※一般的なカテゴリー
+                <li>bookmark: snort,amethystでのブックマーク</li>
+                <li>pin: snortでのピン留め</li>
+            </ul>
+        </div>
+    </div>
+
+   
         <hr />
 
         <div class="input">
