@@ -168,7 +168,7 @@
         const pubkeyList = await formatPubkeyList(eventList);//newBookmarkListEvent;//[1]; //pubkeyLIst
         // console.log(pubkeyList);
         // console.log(pubkeyList.length);
-        console.log(pubkeyList)
+       // console.log(pubkeyList)
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
         
@@ -180,8 +180,9 @@
             //    console.log(localProfiles.length);
 
             for (let i = 0; i < pubkeyList.length; i++) {
-                console.log(pubkeyList[i] );
-                if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {//ローカルストレージにデータがあるということ
+                console.log(localProfiles[pubkeyList[i]]!=="" );
+
+                if (pubkeyList[i] in localProfiles && localProfiles[pubkeyList[i]]!== "") {//ローカルストレージにデータがあるということ
                 } else {
                   
                     getPubkeyList.push(pubkeyList[i]);
@@ -197,9 +198,10 @@
         if (getPubkeyList.length > 0) {
             profiles = await getProfile(getPubkeyList); //key=pubkey,value=profile
         }
+        console.log(profiles);
         if (localProfilesString !== null) {
             // profiles = { ...localProfiles, ...profiles };
-            profiles = Object.assign({}, localProfiles, profiles);
+            profiles ={...localProfiles, ...profiles};
         }
         //localstorageに保存
         localStorage.setItem("profile", JSON.stringify(profiles));
