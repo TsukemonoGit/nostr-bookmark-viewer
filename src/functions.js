@@ -460,12 +460,16 @@ export function formatPubkeyList(eventList) {
          * @type {string[]}
          */
     let pubkeyArray = [];
-    for (let item in eventList) {
-        const key = Object.keys(item)[0];
+  //  console.log(eventList);
+    for (let item=0 ;item<Object.keys.length;item++) {
+        const key = eventList[Object.keys(eventList)[item]];
+      //  console.log(item);
         // @ts-ignore
-        if (!pubkeyArray.includes(item[key].pubkey)) {
+        if (!pubkeyArray.includes(key.pubkey)) {
             // @ts-ignore
-            pubkeyArray.push(item[key].pubkey);
+       //     console.log(pubkeyArray.includes(key.pubkey));
+              // @ts-ignore
+            pubkeyArray.push(key.pubkey);
         }
     }
     return pubkeyArray;

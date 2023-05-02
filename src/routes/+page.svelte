@@ -163,14 +163,15 @@
 
         //{eventid:event}
         eventList = Object.assign({},eventList,newBookmarkListEvent);
-
+        console.log(eventList)
         //string[] pubkeyList
         const pubkeyList = await formatPubkeyList(eventList);//newBookmarkListEvent;//[1]; //pubkeyLIst
         // console.log(pubkeyList);
         // console.log(pubkeyList.length);
-
+        console.log(pubkeyList)
         //localstrageから読む
         const localProfilesString = await localStorage.getItem("profile");
+        
         let localProfiles;
         let getPubkeyList = [];
         if (localProfilesString !== null) {
@@ -185,7 +186,9 @@
                 }
             }
         } else {
+          
             getPubkeyList = pubkeyList;
+            
         }
         console.log(getPubkeyList.length);
 
