@@ -180,8 +180,10 @@
             //    console.log(localProfiles.length);
 
             for (let i = 0; i < pubkeyList.length; i++) {
-                if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {
+                console.log(pubkeyList[i] );
+                if (pubkeyList[i] in localProfiles && localProfiles[i] !== "") {//ローカルストレージにデータがあるということ
                 } else {
+                  
                     getPubkeyList.push(pubkeyList[i]);
                 }
             }
@@ -279,7 +281,14 @@
         }
         show.set(true);
         const thisEvent = await getSingleEvent(noteHex);
-        console.log(thisEvent);
+        console.log(thisEvent.id);
+        /**
+         * @type {{[key:string]:import("nostr-tools").Event}}
+         */
+        const pushE={};
+        pushE[thisEvent.id]=thisEvent;
+        console.log(pushE);
+       eventList={...eventList, ...pushE};
         showModalData = thisEvent.content;
 
         //イベントプレビューを表示して

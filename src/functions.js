@@ -461,9 +461,9 @@ export function formatPubkeyList(eventList) {
          */
     let pubkeyArray = [];
   //  console.log(eventList);
-    for (let item=0 ;item<Object.keys.length;item++) {
+    for (let item=0 ;item<Object.keys(eventList).length;item++) {
         const key = eventList[Object.keys(eventList)[item]];
-      //  console.log(item);
+       // console.log(item);
         // @ts-ignore
         if (!pubkeyArray.includes(key.pubkey)) {
             // @ts-ignore
