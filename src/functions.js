@@ -231,6 +231,8 @@ export async function getProfile(pubkeyList) {
 
         sub.on('event', event => {
             // @ts-ignore
+            //console.log(event.pubkey);
+             // @ts-ignore
             profiles[event.pubkey] = event;
         });
 
