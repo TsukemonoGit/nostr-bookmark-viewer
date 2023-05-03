@@ -230,13 +230,15 @@ export async function getProfile(pubkeyList) {
         }, 5000);
 
         sub.on('event', event => {
+        
             // @ts-ignore
-            //console.log(event.pubkey);
+            console.log(event.pubkey);
              // @ts-ignore
             profiles[event.pubkey] = event;
         });
 
         sub.on("eose", () => {
+       console.log("eose");
             sub.unsub(); //イベントの購読を停止
             clearTimeout(timeoutID); //settimeoutのタイマーより早くeoseを受け取ったら、setTimeoutをキャンセルさせる。
             resolve(profiles);
@@ -247,7 +249,8 @@ export async function getProfile(pubkeyList) {
     //    console.log(eventList);
 
     await result;// result プロミスの解決を待つ
-    return result;
+    console.log(profiles);
+    return profiles;
 }
 
 

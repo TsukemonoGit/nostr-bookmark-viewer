@@ -180,7 +180,7 @@
             //    console.log(localProfiles.length);
 
             for (let i = 0; i < pubkeyList.length; i++) {
-                console.log(localProfiles[pubkeyList[i]]!=="" );
+              //  console.log(localProfiles[pubkeyList[i]]!=="" );
 
                 if (pubkeyList[i] in localProfiles && localProfiles[pubkeyList[i]]!== "") {//ローカルストレージにデータがあるということ
                 } else {
